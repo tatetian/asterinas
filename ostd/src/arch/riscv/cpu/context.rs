@@ -11,7 +11,8 @@ use crate::{
         trap::{RawUserContext, TrapFrame},
         TIMER_IRQ_NUM,
     },
-    trap::call_irq_callback_functions,
+    cpu::PrivilegeLevel,
+    irq::call_irq_callback_functions,
     user::{ReturnReason, UserContextApi, UserContextApiInternal},
 };
 
@@ -149,6 +150,7 @@ impl UserContextApiInternal for UserContext {
                     call_irq_callback_functions(
                         &self.as_trap_frame(),
                         TIMER_IRQ_NUM.load(Ordering::Relaxed) as usize,
+                        PrivilegeLevel::User,
                     );
                 }
                 Trap::Interrupt(_) => todo!(),
