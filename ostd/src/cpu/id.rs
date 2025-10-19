@@ -4,6 +4,8 @@
 
 pub use current::PinCurrentCpu;
 
+use crate::util::id_set::Id;
+
 /// The ID of a CPU in the system.
 ///
 /// If converting from/to an integer, the integer must start from 0 and be less
@@ -24,22 +26,6 @@ impl CpuId {
         unsafe { Self::new_unchecked(raw_id) }
     }
 
-    /// Creates a new instance.
-    ///
-    /// # Safety
-    ///
-    /// The given number must be within the range `[0..ostd::cpu::num_cpus()]`.
-    pub(super) unsafe fn new_unchecked(raw_id: u32) -> Self {
-        // Is this a good idea to mark this function as const?
-        //
-        // Not really. This is because
-        // the number of CPU cores can only be determined at the run time.
-        // As a result, it is impossible to use `CpuId::new_unchecked`
-        // both statically and safely.
-
-        Self(raw_id)
-    }
-
     /// Returns the CPU ID of the bootstrap processor (BSP).
     ///
     /// The number for the BSP is always zero.
@@ -58,6 +44,24 @@ impl CpuId {
     /// Converts the CPU ID to an `u32`.
     pub const fn as_u32(self) -> u32 {
         self.0
+    }
+}
+
+// SAFETY: `CpuId`s and the integers within 0 to `num_cpus` (exclusive)
+// have 1:1 mapping.
+unsafe impl Id for CpuId {
+    unsafe fn new_unchecked(raw_id: u32) -> Self {
+        Self(raw_id)
+    }
+
+    fn cardinality() -> u32 {
+        num_cpus() as u32
+    }
+}
+
+impl From<CpuId> for u32 {
+    fn from(cpu_id: CpuId) -> Self {
+        cpu_id.0
     }
 }
 
@@ -100,7 +104,7 @@ mod current {
     //! The current CPU ID.
 
     use super::CpuId;
-    use crate::{cpu_local_cell, task::atomic_mode::InAtomicMode};
+    use crate::{cpu_local_cell, task::atomic_mode::InAtomicMode, util::id_set::Id};
 
     /// A marker trait for guard types that can "pin" the current task to the
     /// current CPU.
