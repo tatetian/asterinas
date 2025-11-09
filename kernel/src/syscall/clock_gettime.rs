@@ -73,7 +73,7 @@ pub enum DynamicClockIdInfo {
 }
 
 impl TryFrom<clockid_t> for DynamicClockIdInfo {
-    type Error = crate::Error;
+    type Error = crate::prelude::Error;
 
     fn try_from(value: clockid_t) -> core::prelude::v1::Result<Self, Self::Error> {
         const CPU_CLOCK_TYPE_MASK: i32 = 0b11;
@@ -128,8 +128,9 @@ pub fn read_clock(clockid: clockid_t, ctx: &Context) -> Result<Duration> {
         let dynamic_clockid_info = DynamicClockIdInfo::try_from(clockid)?;
         match dynamic_clockid_info {
             DynamicClockIdInfo::Pid(pid, clock_type) => {
-                let process = process_table::get_process(pid)
-                    .ok_or_else(|| crate::Error::with_message(Errno::EINVAL, "invalid clock ID"))?;
+                let process = process_table::get_process(pid).ok_or_else(|| {
+                    crate::prelude::Error::with_message(Errno::EINVAL, "invalid clock ID")
+                })?;
                 match clock_type {
                     DynamicClockType::Profiling => Ok(process.prof_clock().read_time()),
                     DynamicClockType::Virtual => Ok(process.prof_clock().user_clock().read_time()),

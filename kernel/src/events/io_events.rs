@@ -2,7 +2,7 @@
 
 use super::{Events, EventsFilter};
 
-crate::bitflags! {
+crate::prelude::bitflags! {
     pub struct IoEvents: u32 {
         const IN    = 0x0001;
         const PRI   = 0x0002;

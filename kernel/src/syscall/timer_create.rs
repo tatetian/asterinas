@@ -143,8 +143,9 @@ where
         let dynamic_clockid_info = DynamicClockIdInfo::try_from(clockid)?;
         match dynamic_clockid_info {
             DynamicClockIdInfo::Pid(pid, clock_type) => {
-                let process = process_table::get_process(pid)
-                    .ok_or_else(|| crate::Error::with_message(Errno::EINVAL, "invalid clock id"))?;
+                let process = process_table::get_process(pid).ok_or_else(|| {
+                    crate::prelude::Error::with_message(Errno::EINVAL, "invalid clock id")
+                })?;
                 let process_timer_manager = process.timer_manager();
                 match clock_type {
                     DynamicClockType::Profiling => process_timer_manager.create_prof_timer(func),

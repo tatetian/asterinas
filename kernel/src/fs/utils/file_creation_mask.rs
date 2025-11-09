@@ -28,12 +28,12 @@ impl Default for FileCreationMask {
 }
 
 impl TryFrom<u16> for FileCreationMask {
-    type Error = crate::Error;
+    type Error = crate::prelude::Error;
 
     fn try_from(value: u16) -> Result<Self, Self::Error> {
         if value & !Self::MASK != 0 {
             Err(Error::with_message(
-                crate::Errno::EINVAL,
+                crate::prelude::Errno::EINVAL,
                 "Invalid FileCreationMask.",
             ))
         } else {

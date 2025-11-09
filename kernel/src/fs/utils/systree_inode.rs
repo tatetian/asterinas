@@ -21,11 +21,10 @@ use crate::{
             IoctlCmd, Metadata, MknodType, StatusFlags,
         },
     },
-    prelude::{VmReader, VmWriter},
+    prelude::{Errno, Error, Result, VmReader, VmWriter},
     process::{signal::PollHandle, Gid, Uid},
     return_errno, return_errno_with_message,
     time::{clocks::RealTimeCoarseClock, Clock},
-    Errno, Error, Result,
 };
 
 type Ino = u64;

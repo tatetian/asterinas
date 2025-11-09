@@ -12,7 +12,7 @@ use crate::{
             FileSystem, Inode, InodeMode, Metadata,
         },
     },
-    Result,
+    prelude::Result,
 };
 
 /// An inode abstraction used in the `ConfigFs`.
