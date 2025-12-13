@@ -2,11 +2,19 @@
 
 [Introduction](README.md)
 
+# Asterinas NixOS
+
+* [Getting Started](distro/README.md)
+* [Popular Applications](distro/popular-applications/README.md)
+    * [Package Management](distro/popular-applications/package-management.md)
+    * [Desktop Environment](distro/popular-applications/desktop-environment.md)
+    * [Containerization](distro/popular-applications/containerization.md)
+
 # Asterinas Kernel
 
 * [Getting Started](kernel/README.md)
 * [Advanced Build and Test Instructions](kernel/advanced-instructions.md)
-    * [Intel TDX](kernel/intel_tdx.md)
+    * [Intel TDX](kernel/intel-tdx.md)
 * [The Framekernel Architecture](kernel/the-framekernel-architecture.md)
 * [Linux Compatibility](kernel/linux-compatibility/README.md)
     * [Syscall Flag Coverage](kernel/linux-compatibility/syscall-flag-coverage/README.md)
@@ -38,7 +46,7 @@
     * [Creating an OS Project](osdk/guide/create-project.md)
     * [Testing or Running an OS Project](osdk/guide/run-project.md)
     * [Working in a Workspace](osdk/guide/work-in-workspace.md)
-    * [Advanced Topics](osdk/guide/advanced_topics.md)
+    * [Advanced Topics](osdk/guide/advanced-topics.md)
         * [Intel TDX](osdk/guide/intel-tdx.md)
 * [OSDK User Reference](osdk/reference/README.md)
     * [Commands](osdk/reference/commands/README.md)

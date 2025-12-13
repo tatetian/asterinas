@@ -1,6 +1,16 @@
 <p align="center">
     <img src="book/src/images/logo_en.svg" alt="asterinas-logo" width="620"><br>
     A secure, fast, and general-purpose OS kernel written in Rust and compatible with Linux<br/>
+</p>
+
+<!-- Asterinas NixOS 0.17.0 demo. It is uploaded as a Github attachment
+so that GitHub will render that URL as a video player in Markdown.
+The original file name will be displayed up in the top bar of the video player.
+So make sure you give the video file a cool name before uploading it.
+-->
+https://github.com/user-attachments/assets/26be2d18-994d-4658-a1b8-f8959bd88b75
+
+<p align="center">
     <a href="https://github.com/asterinas/asterinas/actions/workflows/test_x86.yml"><img src="https://github.com/asterinas/asterinas/actions/workflows/test_x86.yml/badge.svg?event=push" alt="Test x86-64" style="max-width: 100%;"></a>
     <a href="https://github.com/asterinas/asterinas/actions/workflows/test_riscv.yml"><img src="https://github.com/asterinas/asterinas/actions/workflows/test_riscv.yml/badge.svg?event=push" alt="Test riscv64" style="max-width: 100%;"></a>
     <a href="https://github.com/asterinas/asterinas/actions/workflows/test_loongarch.yml"><img src="https://github.com/asterinas/asterinas/actions/workflows/test_loongarch.yml/badge.svg?event=push" alt="Test loongarch64" style="max-width: 100%;"></a>
@@ -9,8 +19,6 @@
     <a href="https://asterinas.github.io/benchmark/tdx/"><img src="https://github.com/asterinas/asterinas/actions/workflows/benchmark_x86_tdx.yml/badge.svg" alt="Benchmark Intel TDX" style="max-width: 100%;"></a>
     <br/>
 </p>
-
-English | [中文版](README_CN.md) | [日本語](README_JP.md)
 
 **News:**
 * 2025-12-08: **FAST 2026** accepted a paper on a novel secure storage solution having been integrated into Asterinas: _MlsDisk: Trusted Block Storage for TEEs Based on Layered Secure Logging_.
@@ -52,37 +60,57 @@ we are steadfastly progressing towards this goal.
 Over the course of 2024,
 we significantly enhanced Asterinas's maturity,
 as detailed in [our end-year report](https://asterinas.github.io/2025/01/20/asterinas-in-2024.html).
-By the end of 2025,
-we plan to launch [Asterinas NixOS](https://asterinas.github.io/book/rfcs/0002-asterinas-nixos.html),
-the first distribution for Asterinas.
-This release will mark Asterinas reaching the Minimum Viable Product (MVP) milestone.
+In December 2025,
+we launched [Asterinas NixOS](https://asterinas.github.io/book/distro/index.html),
+an Asterinas distribution based on [NixOS](https://nixos.org/).
+This release marks Asterinas reaching the Minimum Viable Product (MVP) milestone.
 In 2026, we aim to make Asterinas production-ready on x86-64 virtual machines and attract real users.
 
 ## Getting Started
 
-Get yourself an x86-64 Linux machine with Docker installed.
-Follow the three simple steps below to get Asterinas up and running.
+### For End Users
 
-1. Download the latest source code.
+We provide [Asterinas NixOS ISO Installer](https://github.com/asterinas/asterinas/releases)
+to make the Asterinas kernel more accessible for early adopters and enthusiasts.
+We encourage you to try out Asterinas NixOS and share feedback.
+Instructions on how to use the ISO installer can be found [here](https://asterinas.github.io/book/distro/index.html#end-users).
 
-```bash
-git clone https://github.com/asterinas/asterinas
-```
+### For Kernel Developers
 
-2. Run a Docker container as the development environment.
+Follow the steps below to get Asterinas up and running.
 
-```bash
-docker run -it --privileged --network=host -v /dev:/dev -v $(pwd)/asterinas:/root/asterinas asterinas/asterinas:0.16.2-20251211
-```
+1. Download the latest source code on an x86-64 Linux machine:
 
-3. Inside the container, go to the project folder to build and run Asterinas.
+    ```bash
+    git clone https://github.com/asterinas/asterinas
+    ```
 
-```bash
-make kernel
-make run_kernel
-```
+2. Run a Docker container as the development environment:
 
-If everything goes well, Asterinas is now up and running inside a VM.
+    ```bash
+    docker run -it --privileged --network=host -v /dev:/dev -v $(pwd)/asterinas:/root/asterinas asterinas/asterinas:0.16.2-20251211
+    ```
+
+3. Inside the container,
+go to the project folder (`/root/asterinas`) and run:
+
+    ```bash
+    make kernel
+    make run_kernel
+    ```
+
+    This results in a VM running the Asterinas kernel with a small initramfs.
+
+4. To install and test real-world applications on Asterinas,
+build and run Asterinas NixOS in a VM:
+
+    ```bash
+    make nixos
+    make run_nixos
+    ```
+    
+    This boots into an interactive shell in Asterinas NixOS,
+    where you can use Nix to install and try more packages.
 
 ## The Book
 
