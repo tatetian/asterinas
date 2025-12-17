@@ -75,6 +75,9 @@ to make the Asterinas kernel more accessible for early adopters and enthusiasts.
 We encourage you to try out Asterinas NixOS and share feedback.
 Instructions on how to use the ISO installer can be found [here](https://asterinas.github.io/book/distro/index.html#end-users).
 
+Disclaimer: Asterinas is an independent, community-led project.
+Asterinas NixOS is **not** an official NixOS project and has **no** affiliation with the NixOS Foundation. **No** sponsorship or endorsement is implied.
+
 ### For Kernel Developers
 
 Follow the steps below to get Asterinas up and running.
