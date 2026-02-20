@@ -247,3 +247,213 @@ ensure that the drop order
 does not create a use-after-free or deadlock.
 Consider explicit `drop()` calls
 when the default drop order is incorrect.
+
+## Naming
+
+### Be Descriptive
+
+Choose names that convey meaning at the point of use.
+Avoid single-letter names and ambiguous abbreviations.
+
+```rust
+// Good
+let parent_vmar = current.root_vmar();
+let listen_addr = socket.local_addr();
+
+// Bad
+let p = current.root_vmar();
+let a = socket.local_addr();
+```
+
+### Follow Naming Conventions
+
+- Title-case acronyms in type names: `Nvme`, `Tcp`, `Pci`
+  (not `NVMe`, `TCP`, `PCI`).
+- Use `read_` / `write_` prefixes for hardware register accessors.
+- Follow the
+  [Rust API Guidelines on naming](https://rust-lang.github.io/api-guidelines/naming.html).
+
+## Documentation
+
+This section covers Rust-specific documentation conventions.
+For general documentation principles, see
+[General Guidelines — Documentation](general-guidelines.md#documentation).
+
+### Doc Comment Formatting
+
+Use `///` doc comments with semantic line breaks
+so that each clause occupies its own line in the source.
+
+```rust
+/// Creates a new virtual memory mapping
+/// at the specified address range.
+///
+/// The caller must ensure that the range
+/// does not overlap with existing mappings.
+```
+
+### Rustdoc Hyperlinks
+
+Wrap identifiers in backticks (`` ` ``)
+and make type names into rustdoc hyperlinks
+using square-bracket syntax (`[TypeName]`).
+
+### Library Crate Documentation
+
+Library crates should re-export the crate-level README
+as the top-level rustdoc page:
+
+```rust
+#![doc = include_str!("../README.md")]
+```
+
+### User-Facing Doc Comments
+
+Do not disclose implementation details
+in public-facing doc comments.
+Doc comments describe _what_ and _how to use_,
+not _how it works internally_.
+
+## Code Organization
+
+### Narrow Visibility
+
+Prefer the narrowest visibility that works.
+Use `pub(crate)` or `pub(super)` instead of `pub`
+when an item does not need to be part of the public API.
+
+### Workspace Dependencies
+
+Always declare shared dependencies
+in the workspace `[workspace.dependencies]` table
+and reference them with `.workspace = true`
+in member crates.
+
+```toml
+# In a member crate's Cargo.toml
+[dependencies]
+ostd.workspace = true
+bitflags.workspace = true
+```
+
+### Method Placement
+
+Insert new methods at a logical position
+within the existing `impl` block —
+not at the very end by default.
+Group related methods together
+and separate groups with blank lines.
+
+### Line Breaking in Builder Patterns
+
+When a builder or chained call spans multiple lines,
+align the continuation to improve readability.
+
+```rust
+let vmo = VmoOptions::new(page_count)
+    .flags(VmoFlags::RESIZABLE)
+    .alloc()
+    .unwrap();
+```
+
+## Testing
+
+For general testing principles, see
+[Testing Guidelines](testing-guidelines.md).
+
+### Test Naming
+
+Name tests after the behavior or specification concept being verified,
+not after internal implementation details.
+Use userspace-visible or specification-level terminology.
+
+```rust
+// Good — describes the observable behavior
+#[test]
+fn read_from_closed_pipe_returns_zero()
+
+// Bad — exposes kernel internals
+#[test]
+fn pipe_channel_ref_count_drops()
+```
+
+### Assertions
+
+Use `assert_eq!`, `assert_ne!`, and `assert!` macros
+instead of printing values and inspecting output manually.
+
+Add a descriptive panic message to `#[should_panic]` tests
+so that an unexpected panic from a different location
+does not silently pass the test:
+
+```rust
+#[test]
+#[should_panic(expected = "index out of bounds")]
+fn access_beyond_capacity_panics() {
+    let buf = Buffer::new(16);
+    let _ = buf[16];
+}
+```
+
+### Avoid Duplication
+
+Do not repeat identical assertions across test functions.
+Extract shared setup, teardown, and common checks
+into helper functions.
+
+```rust
+fn create_test_vmo(pages: usize) -> Vmo {
+    VmoOptions::new(pages)
+        .flags(VmoFlags::RESIZABLE)
+        .alloc()
+        .unwrap()
+}
+
+#[test]
+fn vmo_read_after_write() {
+    let vmo = create_test_vmo(1);
+    // ... test-specific logic
+}
+```
+
+### Regression Tests
+
+Name regression tests after the issue or behavior being verified.
+Include a reference to the issue number or description
+in a comment.
+
+```rust
+// Regression test for https://github.com/asterinas/asterinas/issues/1234
+#[test]
+fn mmap_fixed_does_not_unmap_adjacent_region() {
+    // ...
+}
+```
+
+Avoid exposing kernel-internal constants in test code.
+Use userspace-visible equivalents instead
+(e.g., `PROT_NONE` instead of internal `MAY_READ` flags).
+
+### Test Code Style
+
+Group related setup, action, and assertion blocks
+with blank lines between them.
+Add brief phase comments for multi-step tests:
+
+```rust
+#[test]
+fn truncate_extends_file_with_zeroes() {
+    // Setup
+    let file = create_temp_file();
+    file.write_all(b"hello").unwrap();
+
+    // Action
+    file.set_len(4096).unwrap();
+
+    // Assertion
+    let mut buf = vec![0u8; 4096];
+    file.read_exact(&mut buf).unwrap();
+    assert_eq!(&buf[..5], b"hello");
+    assert!(buf[5..].iter().all(|&b| b == 0));
+}
+```
