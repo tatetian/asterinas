@@ -74,3 +74,176 @@ For example, it is fine to add ABI constants that are unused because
 the corresponding feature (_e.g.,_ a system call) is partially implemented.
 This is a case where all of the above requirements are met,
 so adding them as dead code is perfectly acceptable.
+
+## Formatting
+
+Asterinas uses [rustfmt](https://rust-lang.github.io/rustfmt/)
+with a project-wide `rustfmt.toml`:
+
+```toml
+imports_granularity="Crate"
+group_imports="StdExternalCrate"
+reorder_imports=true
+skip_macro_invocations = ["chmod", "mkmod", "ioc"]
+```
+
+- **`imports_granularity = "Crate"`** —
+  Merge imports from the same crate into a single `use` statement.
+- **`group_imports = "StdExternalCrate"`** —
+  Separate imports into three groups
+  (standard library, external crates, crate-local),
+  divided by blank lines.
+- **`reorder_imports = true`** —
+  Sort imports alphabetically within each group.
+- **`skip_macro_invocations`** —
+  Skip formatting inside `chmod`, `mkmod`, and `ioc` macro calls.
+
+Run `cargo fmt` before submitting a pull request.
+
+## Import Conventions
+
+Imports follow a three-group pattern
+enforced by the `rustfmt.toml` settings above:
+
+1. Standard library (`core`, `alloc`, `std`)
+2. External crates
+3. Crate-local (`super::`, `crate::`)
+
+Each group is separated by a blank line.
+Items from the same crate are merged
+into a single `use` statement with nested braces.
+
+Example from `kernel/src/fs/path/dentry.rs`:
+
+```rust
+use core::{
+    ops::Deref,
+    sync::atomic::{AtomicU32, Ordering},
+};
+
+use hashbrown::HashMap;
+use ostd::sync::RwMutexWriteGuard;
+
+use super::{is_dot, is_dot_or_dotdot, is_dotdot};
+use crate::{
+    fs::{
+        self,
+        utils::{Inode, InodeExt, InodeMode, InodeType, MknodType},
+    },
+    prelude::*,
+};
+```
+
+## Unsafe Code
+
+Asterinas kernel crates deny unsafe code by default:
+
+```rust
+#![deny(unsafe_code)]
+```
+
+Only OSTD (`ostd/`) crates may contain `unsafe` code.
+If a kernel crate requires an unsafe operation,
+the functionality should be provided as a safe API in OSTD.
+
+### SAFETY Comments
+
+Every `unsafe` block must have a preceding `// SAFETY:` comment
+that justifies why the operation is sound.
+For multi-condition invariants,
+use a numbered list:
+
+```rust
+// SAFETY:
+// 1. We have exclusive access to both the current context
+//    and the next context (see above).
+// 2. The next context is valid (because it is either
+//    correctly initialized or written by a previous
+//    `context_switch`).
+unsafe {
+    context_switch(next_task_ctx_ptr, current_task_ctx_ptr);
+}
+```
+
+### Safety Documentation
+
+Public `unsafe` functions and traits
+must include a `# Safety` section in their doc comments
+describing the invariants that callers must uphold.
+
+```rust
+/// Reads a value from the given physical address.
+///
+/// # Safety
+///
+/// The caller must ensure that `addr` points to
+/// a valid, mapped physical memory region of at least
+/// `size_of::<T>()` bytes.
+pub unsafe fn read_phys<T>(addr: usize) -> T { ... }
+```
+
+For more on writing sound unsafe code,
+see [The Rustonomicon](https://doc.rust-lang.org/nomicon/).
+
+## Error Handling
+
+Use the `return_errno_with_message!` macro
+for returning errors with descriptive messages:
+
+```rust
+return_errno_with_message!(
+    Errno::ENOTDIR,
+    "the dentry is not related to a directory inode"
+);
+```
+
+Prefer early returns to reduce nesting:
+
+```rust
+pub(super) fn unlink(&self, name: &str) -> Result<()> {
+    if is_dot_or_dotdot(name) {
+        return_errno_with_message!(Errno::EINVAL, "unlink on . or ..");
+    }
+    // ... main logic at the top level
+}
+```
+
+See [General Guidelines — Error Messages](general-guidelines.md#error-messages)
+for message formatting rules.
+
+## Concurrency
+
+### Lock Ordering
+
+When acquiring multiple locks,
+always acquire them in a consistent order
+to prevent deadlocks.
+Document the required ordering
+in comments near the lock declarations.
+
+### Race Condition Awareness
+
+Consider whether operations on shared state are atomic.
+Use appropriate synchronization primitives
+and reason explicitly about concurrent access.
+
+### Checked Arithmetic
+
+Use checked or saturating arithmetic in debug builds
+for operations that could overflow.
+The `debug_assert!` macro is useful
+for catching overflow conditions during development:
+
+```rust
+debug_assert!(self.align.is_multiple_of(PAGE_SIZE));
+debug_assert!(self.align.is_power_of_two());
+```
+
+### Drop Ordering
+
+Be mindful of the order in which values are dropped.
+When a value holds a lock guard or other RAII resource,
+ensure that the drop order
+does not create a use-after-free or deadlock.
+Consider explicit `drop()` calls
+when the default drop order is incorrect.
