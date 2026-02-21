@@ -11,12 +11,16 @@ observed in code reviews.
 
 The style guidelines are organized into the following pages:
 
-- **[General Guidelines](general-guidelines.md)** —
-  Naming, documentation, code organization, formatting,
-  error messages, design principles, and comment style.
-- **[Rust Guidelines](rust-guidelines.md)** —
-  API documentation, lints, formatting, imports,
-  unsafe code, error handling, and concurrency.
+- **[General Guidelines](general-guidelines/README.md)** —
+  Philosophy, principles, and language-agnostic themes
+  covering naming, comments, layout, formatting,
+  and API design.
+- **[Rust Guidelines](rust-guidelines/README.md)** —
+  Rust-specific conventions organized into
+  naming, language items (variables, functions, types,
+  comments, unsafety, modules, macros, conditional compilation),
+  and select topics (idiomatics, concurrency,
+  error handling, unit testing).
 - **[Git Guidelines](git-guidelines.md)** —
   Commit messages, commit organization, and pull requests.
 - **[Testing Guidelines](testing-guidelines.md)** —

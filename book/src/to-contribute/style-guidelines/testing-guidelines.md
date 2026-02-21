@@ -2,7 +2,7 @@
 
 This page covers language-agnostic testing conventions.
 For Rust-specific testing conventions, see
-[Rust Guidelines — Testing](rust-guidelines.md#testing).
+[Rust Guidelines — Unit Testing](rust-guidelines/select-topics/unit-testing.md).
 
 ## Test Naming
 
