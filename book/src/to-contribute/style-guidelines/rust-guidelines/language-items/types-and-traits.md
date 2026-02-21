@@ -69,11 +69,39 @@ or intermediate state holders
 that track what could be modeled
 with existing types should be removed.
 
+```rust
+// Bad — unnecessary Inner wrapper
+pub struct Socket {
+    inner: SpinLock<SocketInner>,
+}
+struct SocketInner {
+    state: SocketState,
+}
+
+// Good — simplified when Inner adds no value
+pub struct Socket {
+    state: SpinLock<SocketState>,
+}
+```
+
 ### TT6. Eliminate redundant `Option` wrapping
 
 When a type is always present,
 wrapping it in `Option`
 adds unnecessary complexity at every usage site.
+
+```rust
+// Bad — name is always set, but every use site
+// must handle None
+pub struct Thread {
+    name: Option<ThreadName>,
+}
+
+// Good — name is always present
+pub struct Thread {
+    name: ThreadName,
+}
+```
 
 ### TT7. Traits must provide compile-time guarantees
 

@@ -13,18 +13,21 @@ and the conventions described in the pages below.
 
 - **[Naming](naming.md)** —
   Getter naming, acronym capitalization,
-  closure variable suffixes, and domain terminology.
+  closure variable suffixes, boolean naming,
+  and domain terminology.
 - **Language Items**
   - **[Variables, Expressions, and Statements](language-items/variables-expressions-and-statements.md)** —
-    Checked arithmetic, immutability, and initialization.
+    Checked arithmetic, immutability, initialization,
+    and conditional encapsulation.
   - **[Functions and Methods](language-items/functions-and-methods.md)** —
-    Early returns, iterators, builders, and helper extraction.
+    Nesting, early returns, iterators, builders,
+    helper extraction, function length, and flag arguments.
   - **[Types and Traits](language-items/types-and-traits.md)** —
     Generics, enums vs. trait objects,
     type-level invariants, and simplification.
   - **[Comments and Documentation](language-items/comments-and-documentation.md)** —
     Doc comment formatting, RFC 505, rustdoc links,
-    and public API coverage.
+    module-level docs, dead code, and public API coverage.
   - **[Unsafety](language-items/unsafety.md)** —
     SAFETY comments, `# Safety` sections,
     scope minimization, and soundness reasoning.
@@ -47,6 +50,15 @@ and the conventions described in the pages below.
   - **[Error Handling](select-topics/error-handling.md)** —
     Error propagation, `return_errno_with_message!`,
     informative messages, and root-cause fixes.
+  - **[Performance](select-topics/performance.md)** —
+    Hot-path complexity, benchmarking,
+    zero-cost abstractions, and avoiding premature optimization.
+  - **[Logging](select-topics/logging.md)** —
+    Log levels, message formatting,
+    the `log` crate, and feature-gated verbose output.
+  - **[Memory and Resource Management](select-topics/memory-and-resource-management.md)** —
+    RAII, `Box::leak` avoidance, typed vs. untyped memory,
+    and `unsafe` marking for memory-affecting functions.
   - **[Unit Testing](select-topics/unit-testing.md)** —
     Test naming, assertions, regression tests,
     and test code style.

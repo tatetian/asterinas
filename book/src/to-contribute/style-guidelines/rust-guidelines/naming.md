@@ -126,3 +126,26 @@ pub struct SoftIrqLine { ... }
 // Bad — inherited jargon with no clear meaning
 pub struct Tasklet { ... }
 ```
+
+### RN8. Use assertion-style boolean names
+
+Boolean variables, fields, and functions
+should read as assertions of fact.
+Use `is_`, `has_`, `can_`, `should_`,
+or `was_` prefixes.
+Never use double negatives.
+
+```rust
+// Good — reads as an assertion
+fn is_page_aligned(&self) -> bool { ... }
+fn has_permission(&self, perm: Permission) -> bool { ... }
+let can_read = mode.is_readable();
+
+// Bad — verb suggests an action, not a query
+fn check_permission(&self, perm: Permission) -> bool { ... }
+// Bad — double negative
+let is_not_empty = !buf.is_empty();
+```
+
+See also
+[General Guidelines — N7](../general-guidelines/themes.md#n7-use-assertion-style-boolean-names).

@@ -66,6 +66,11 @@ while !found { ... }
 
 When a convention already exists in the codebase, follow it.
 Consistency matters more than personal preference.
+Do similar things the same way throughout the codebase —
+consistency reduces surprise and cognitive load
+even when neither approach is objectively superior.
+Do not introduce a competing convention
+without compelling justification.
 
 ### I6. Prefer `Drop` for automatic cleanup
 

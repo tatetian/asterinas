@@ -53,3 +53,33 @@ debug_assert!(is_page_aligned && is_within_range);
 // Bad — reader must parse the whole expression
 debug_assert!(addr % PAGE_SIZE == 0 && addr < max_addr);
 ```
+
+### VE6. Encapsulate complex conditionals in named predicates
+
+When an `if` condition involves
+more than two conjuncts or disjuncts,
+or when its meaning is not immediately obvious,
+extract the condition into a named boolean method.
+The method name should describe the condition
+in problem-domain terms.
+
+```rust
+// Good — intent is clear at the call site
+if self.is_eligible_for_reclaim() { ... }
+
+impl Page {
+    fn is_eligible_for_reclaim(&self) -> bool {
+        self.ref_count() == 1
+            && !self.is_pinned()
+            && self.age() > RECLAIM_THRESHOLD
+    }
+}
+
+// Bad — reader must parse a compound expression
+if self.ref_count() == 1
+    && !self.is_pinned()
+    && self.age() > RECLAIM_THRESHOLD
+{
+    ...
+}
+```

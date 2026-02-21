@@ -14,6 +14,15 @@ with numbered, actionable guidelines.
 - **[Error Handling](error-handling.md)** —
   Error propagation, `return_errno_with_message!`,
   informative messages, and root-cause fixes.
+- **[Performance](performance.md)** —
+  Hot-path complexity, benchmarking,
+  zero-cost abstractions, and avoiding premature optimization.
+- **[Logging](logging.md)** —
+  Log levels, message formatting,
+  the `log` crate, and feature-gated verbose output.
+- **[Memory and Resource Management](memory-and-resource-management.md)** —
+  RAII, `Box::leak` avoidance, typed vs. untyped memory,
+  and `unsafe` marking for memory-affecting functions.
 - **[Unit Testing](unit-testing.md)** —
   Test naming, assertions, regression tests,
   and test code style.

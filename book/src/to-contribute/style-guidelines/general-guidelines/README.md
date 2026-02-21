@@ -11,11 +11,16 @@ For Rust-specific conventions, see
 
 ## Philosophy
 
-### Readability is paramount
+### Minimize time to understand
+
+Code should be written to minimize the time
+it would take someone else to fully understand it.
+This is the fundamental theorem of readability
+and the single most important measure
+of code quality in this project.
+"Someone else" includes your future self.
 
 Code is read far more often than it is written.
-Every coding decision should minimize
-the time it takes another person to understand the code.
 If a technique makes code shorter
 but harder to follow at a glance,
 choose clarity over brevity.
@@ -27,6 +32,16 @@ The purpose of every technique in software construction —
 decomposition, naming, encapsulation, abstraction —
 is to break complex problems into simple pieces
 so that you can safely focus on one thing at a time.
+
+### Self-documenting code first
+
+The best comment is the one you found a way not to write
+by making the code clear enough.
+If a comment is needed to explain _what_ code does,
+first try to rewrite the code.
+Comments should explain _why_ (intent, design decisions, tradeoffs),
+not _what_ or _how_.
+Do not comment tricky code — rewrite it to be straightforward.
 
 ### Craftsmanship and care
 
@@ -42,19 +57,11 @@ renaming a variable, extracting a function,
 eliminating duplication —
 prevent code from rotting over time.
 
-### Humility
-
-The best programmers compensate
-for the limits of human short-term memory.
-Every good practice — decomposition, reviews,
-short routines, clear names — exists
-to reduce cognitive load on the programmer.
-
 ## Principles
 
 ### Single Responsibility
 
-Each module, class, or function
+Each module, type, or function
 should have one, and only one, reason to change.
 If you cannot describe what a unit does
 without the words "and," "or," or "but,"
@@ -66,7 +73,7 @@ Every piece of knowledge
 should have a single, unambiguous representation.
 Duplication harms readability and maintainability.
 When the same pattern appears three or more times,
-extract it into a reusable helper.
+eliminate the duplication (e.g., adding a helper function).
 
 ### Information Hiding
 
@@ -90,6 +97,15 @@ Connections between modules should be
 small, visible, and flexible.
 Within a module, every part should contribute
 to a single, well-defined purpose.
+
+### Consistency
+
+Do similar things the same way throughout the codebase.
+Consistency reduces surprise and cognitive load
+even when neither approach is objectively superior.
+When a convention already exists, follow it;
+do not introduce a competing convention
+without compelling justification.
 
 ### Iterate
 

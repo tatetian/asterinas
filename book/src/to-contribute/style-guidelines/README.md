@@ -20,7 +20,8 @@ The style guidelines are organized into the following pages:
   naming, language items (variables, functions, types,
   comments, unsafety, modules, macros, conditional compilation),
   and select topics (idiomatics, concurrency,
-  error handling, unit testing).
+  error handling, performance, logging,
+  memory and resource management, unit testing).
 - **[Git Guidelines](git-guidelines.md)** —
   Commit messages, commit organization, and pull requests.
 - **[Testing Guidelines](testing-guidelines.md)** —

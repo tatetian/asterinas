@@ -84,3 +84,47 @@ All public items —
 especially syscall handlers, public structs/enums,
 and macro-generated methods —
 must have doc comments.
+
+### D9. Add module-level documentation for major components
+
+Every module file that serves as
+a significant kernel component
+(a subsystem entry point, a major data structure,
+a driver)
+should begin with a `//!` comment explaining:
+(1) what this module does,
+(2) the key types it exposes, and
+(3) how it relates to neighboring modules.
+
+```rust
+//! Virtual memory area (VMA) management.
+//!
+//! This module defines [`VmMapping`] and its associated types,
+//! which represent contiguous regions of a process's
+//! virtual address space.
+//! VMAs are managed by the [`Vmar`] tree
+//! defined in the parent module.
+```
+
+### D10. Delete commented-out code
+
+Never commit commented-out code blocks.
+Version control preserves history.
+Commented-out code confuses readers, rots,
+and creates the false impression
+that it is still relevant.
+
+See also
+[General Guidelines — C9](../../general-guidelines/themes.md#c9-never-commit-commented-out-code).
+
+### D11. Delete dead code aggressively
+
+Unreachable functions, unused imports,
+obsolete branches, and orphaned types
+should be deleted.
+Every line of code has a maintenance cost.
+The most readable code is code that is not there.
+
+`#[expect(dead_code)]` (per
+[MA2](macros-and-attributes.md#ma2-when-to-expectdead_code))
+is the narrow exception, not the norm.
