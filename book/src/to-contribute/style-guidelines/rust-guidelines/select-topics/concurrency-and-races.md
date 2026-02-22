@@ -81,3 +81,61 @@ The optimization of checking a condition
 before registering a waiter
 must also check after registering the waiter
 to avoid losing wakeup events.
+
+### CR10. Prevent false sharing on per-CPU data
+
+When per-CPU counters or state
+are stored in adjacent memory,
+they may share a cache line.
+Pad with `#[repr(align(64))]`
+when benchmarks show contention.
+
+```rust
+// Good — each CPU's counter occupies its own cache line
+#[repr(align(64))]
+struct PerCpuCounter {
+    value: AtomicU64,
+}
+
+static COUNTERS: [PerCpuCounter; MAX_CPUS] = /* ... */;
+```
+
+### CR11. Use `compare_exchange_weak` in retry loops
+
+`compare_exchange_weak` is more efficient
+on architectures with LL/SC (e.g., ARM, RISC-V).
+When already in a retry loop,
+always prefer the weak variant.
+
+```rust
+// Good — weak variant in a loop
+loop {
+    let current = counter.load(Ordering::Relaxed);
+    match counter.compare_exchange_weak(
+        current,
+        current + 1,
+        Ordering::AcqRel,
+        Ordering::Relaxed,
+    ) {
+        Ok(_) => break,
+        Err(_) => continue,
+    }
+}
+
+// Bad — strong variant wastes cycles
+// when the loop already retries
+loop {
+    let current = counter.load(Ordering::Relaxed);
+    if counter
+        .compare_exchange(
+            current,
+            current + 1,
+            Ordering::AcqRel,
+            Ordering::Relaxed,
+        )
+        .is_ok()
+    {
+        break;
+    }
+}
+```

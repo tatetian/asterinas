@@ -86,3 +86,28 @@ Introducing complexity
 to solve a non-existent problem is rejected.
 If you claim a change improves performance,
 show the numbers.
+
+### P6. Prefer `mem::take`/`mem::replace` over `.clone()`
+
+When the source value is no longer needed,
+use `mem::take` or move the value out
+instead of cloning.
+Use `mem::replace`
+when you need to take ownership
+from behind a `&mut` reference.
+
+```rust
+use core::mem;
+
+// Good — moves the value out without cloning
+fn drain_name(entry: &mut Entry) -> String {
+    mem::take(&mut entry.name)
+}
+
+// Bad — clones when the original is about to be overwritten
+fn drain_name(entry: &mut Entry) -> String {
+    let name = entry.name.clone();
+    entry.name = String::new();
+    name
+}
+```

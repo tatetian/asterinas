@@ -110,3 +110,42 @@ when it can guarantee the invariant
 for all instances.
 If the property is not enforced by the type system,
 a trait is the wrong tool.
+
+### TT10. Derive standard traits proactively
+
+Every public type should derive
+all applicable standard traits:
+`Debug` (always),
+`Clone` (when logically copyable),
+`Default` (when a natural default exists),
+`PartialEq`/`Eq` (when equality is meaningful).
+Missing derives force downstream code
+into unnecessary workarounds.
+
+```rust
+// Good — all applicable standard traits derived
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct PageFaultInfo {
+    pub address: usize,
+    pub flags: PageFaultFlags,
+}
+```
+
+### TT11. Use `#[non_exhaustive]` on public enums and structs that may grow
+
+Mark public enums and structs
+with `#[non_exhaustive]`
+when new variants or fields may be added in the future.
+This reserves the right to extend the type
+without breaking downstream code.
+
+```rust
+// Good — new variants can be added
+// without a semver-breaking change
+#[derive(Debug)]
+#[non_exhaustive]
+pub enum VmEvent {
+    PageFault(PageFaultInfo),
+    AccessFault(AccessFaultInfo),
+}
+```

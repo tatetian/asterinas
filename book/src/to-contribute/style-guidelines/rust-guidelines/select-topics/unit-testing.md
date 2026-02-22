@@ -116,3 +116,25 @@ fn truncate_extends_file_with_zeroes() {
     assert!(buf[5..].iter().all(|&b| b == 0));
 }
 ```
+
+### UT8. Use compile-time assertions for critical type invariants
+
+Use `const _: () = assert!(...)` to verify at compile time
+that types have expected sizes, alignments,
+or other properties.
+This catches layout regressions immediately
+rather than at runtime.
+
+```rust
+// Good — compile-time check that the type fits in a page
+const _: () = assert!(
+    core::mem::size_of::<TaskContext>() <= 4096,
+    "TaskContext must fit in a single page"
+);
+
+// Good — verify alignment matches hardware requirement
+const _: () = assert!(
+    core::mem::align_of::<PerCpuData>() >= 64,
+    "PerCpuData must be cache-line aligned"
+);
+```

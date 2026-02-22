@@ -6,7 +6,7 @@ Consistent style makes the codebase easier to read, review, and maintain.
 
 These guidelines complement the
 [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/)
-and are derived from recurring patterns
+and are derived from recurring patterns (and anti-patterns)
 observed in code reviews.
 
 The style guidelines are organized into the following pages:

@@ -102,3 +102,53 @@ fn wait_timeout_while(&self, ...) { ... }
 // Bad — non-standard naming
 fn wait_until_or_timeout(&self, ...) { ... }
 ```
+
+### I9. Choose the right interior mutability primitive
+
+Use `Cell<T>` for `Copy` types
+needing single-threaded mutation through shared references.
+Use `RefCell<T>` only in single-threaded contexts.
+Use `Mutex`/`RwLock` for multi-threaded shared mutation.
+Never use `RefCell` in a type
+that might be shared across threads.
+
+```rust
+// Good — Cell for a simple Copy counter
+// in a single-threaded context
+struct LocalStats {
+    hits: Cell<u64>,
+}
+
+// Good — Mutex for shared mutable state
+// accessed from multiple threads
+struct SharedStats {
+    hits: Mutex<u64>,
+}
+
+// Bad — RefCell in a Sync type risks
+// panics from concurrent borrow_mut() calls
+struct SharedStats {
+    hits: RefCell<u64>, // NOT thread-safe!
+}
+```
+
+### I10. Prefer elided lifetimes; annotate only when clarifying
+
+Do not add unnecessary lifetime parameters.
+Annotate explicitly when:
+(a) the return borrows from a non-obvious input,
+(b) a struct holds a reference
+that must outlive something specific, or
+(c) the code would be confusing without it.
+
+```rust
+// Good — lifetimes elided; the signature is clear
+fn name(&self) -> &str { ... }
+
+// Good — explicit lifetime clarifies
+// which input the return borrows from
+fn longest<'a>(a: &'a str, b: &str) -> &'a str { ... }
+
+// Bad — unnecessary lifetime annotation
+fn name<'a>(&'a self) -> &'a str { ... }
+```

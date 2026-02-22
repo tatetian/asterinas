@@ -11,19 +11,22 @@ with numbered, actionable guidelines.
   Early returns, iterators, builders, and helper extraction.
 - **[Types and Traits](types-and-traits.md)** —
   Generics, enums vs. trait objects,
-  type-level invariants, and simplification.
+  type-level invariants, standard trait deriving,
+  `#[non_exhaustive]`, and simplification.
 - **[Comments and Documentation](comments-and-documentation.md)** —
   Doc comment formatting, RFC 505, rustdoc links,
   and public API coverage.
 - **[Unsafety](unsafety.md)** —
   SAFETY comments, `# Safety` sections,
-  scope minimization, and soundness reasoning.
+  scope minimization, module-boundary reasoning,
+  panic safety, and soundness reasoning.
 - **[Modules and Crates](modules-and-crates.md)** —
   Visibility, workspace dependencies, imports,
   and module organization.
 - **[Macros and Attributes](macros-and-attributes.md)** —
   Lint suppression, `#[expect]`, dead code policy,
-  and `rustfmt` configuration.
+  `rustfmt` configuration, macro hygiene,
+  and functions vs. macros.
 - **[Conditional Compilation](conditional-compilation.md)** —
   Architecture selection, feature gates,
   and runtime dispatch.

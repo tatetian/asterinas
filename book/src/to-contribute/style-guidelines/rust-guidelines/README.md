@@ -24,41 +24,48 @@ and the conventions described in the pages below.
     helper extraction, function length, and flag arguments.
   - **[Types and Traits](language-items/types-and-traits.md)** —
     Generics, enums vs. trait objects,
-    type-level invariants, and simplification.
+    type-level invariants, standard trait deriving,
+    `#[non_exhaustive]`, and simplification.
   - **[Comments and Documentation](language-items/comments-and-documentation.md)** —
     Doc comment formatting, RFC 505, rustdoc links,
     module-level docs, dead code, and public API coverage.
   - **[Unsafety](language-items/unsafety.md)** —
     SAFETY comments, `# Safety` sections,
-    scope minimization, and soundness reasoning.
+    scope minimization, module-boundary reasoning,
+    panic safety, and soundness reasoning.
   - **[Modules and Crates](language-items/modules-and-crates.md)** —
     Visibility, workspace dependencies, imports,
     and module organization.
   - **[Macros and Attributes](language-items/macros-and-attributes.md)** —
     Lint suppression, `#[expect]`, dead code policy,
-    and `rustfmt` configuration.
+    `rustfmt` configuration, macro hygiene,
+    and functions vs. macros.
   - **[Conditional Compilation](language-items/conditional-compilation.md)** —
     Architecture selection, feature gates,
     and runtime dispatch.
 - **Select Topics**
   - **[Idiomatics](select-topics/idiomatics.md)** —
     The `?` operator, `Drop` cleanup, `impl Trait`,
+    interior mutability, lifetime elision,
     and established conventions.
   - **[Concurrency and Races](select-topics/concurrency-and-races.md)** —
     Lock ordering, atomics, memory ordering,
-    spinlock discipline, and TOCTOU.
+    spinlock discipline, false sharing,
+    `compare_exchange_weak`, and TOCTOU.
   - **[Error Handling](select-topics/error-handling.md)** —
     Error propagation, `return_errno_with_message!`,
     informative messages, and root-cause fixes.
   - **[Performance](select-topics/performance.md)** —
     Hot-path complexity, benchmarking,
-    zero-cost abstractions, and avoiding premature optimization.
+    zero-cost abstractions, `mem::take`/`mem::replace`,
+    and avoiding premature optimization.
   - **[Logging](select-topics/logging.md)** —
     Log levels, message formatting,
     the `log` crate, and feature-gated verbose output.
   - **[Memory and Resource Management](select-topics/memory-and-resource-management.md)** —
     RAII, `Box::leak` avoidance, typed vs. untyped memory,
+    volatile MMIO, fallible allocation,
     and `unsafe` marking for memory-affecting functions.
   - **[Unit Testing](select-topics/unit-testing.md)** —
     Test naming, assertions, regression tests,
-    and test code style.
+    compile-time assertions, and test code style.

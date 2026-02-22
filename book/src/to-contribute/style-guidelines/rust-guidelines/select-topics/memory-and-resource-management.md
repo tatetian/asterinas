@@ -79,3 +79,50 @@ pub unsafe fn read_phys<T>(addr: usize) -> T { ... }
 
 See also
 [Unsafety — U2](../language-items/unsafety.md#u2-document-safety-requirements).
+
+### MR5. Use `read_volatile`/`write_volatile` for all MMIO
+
+Hardware registers and memory-mapped I/O
+must be accessed via
+`core::ptr::read_volatile`/`write_volatile`.
+Normal reads and writes
+may be elided or reordered by the compiler.
+Note: volatile does NOT provide synchronization
+(see [CR7](concurrency-and-races.md#cr7-volatile-does-not-fix-data-races)).
+
+```rust
+// Good — volatile access for MMIO registers
+unsafe {
+    let status = core::ptr::read_volatile(mmio_base.add(STATUS_OFFSET));
+    core::ptr::write_volatile(mmio_base.add(COMMAND_OFFSET), cmd);
+}
+
+// Bad — compiler may optimize away or reorder
+unsafe {
+    let status = *mmio_base.add(STATUS_OFFSET);
+    *mmio_base.add(COMMAND_OFFSET) = cmd;
+}
+```
+
+### MR6. Provide fallible (`try_`) versions of allocating APIs
+
+In kernel context, allocation can fail.
+APIs that internally allocate
+should provide a `try_` variant
+that returns `Result` instead of panicking on OOM.
+Use `Vec::try_reserve`, `Box::try_new` (when stabilized),
+or manual allocation with error propagation.
+
+```rust
+// Good — caller can handle allocation failure
+pub fn try_create(size: usize) -> Result<Self> {
+    let mut buf = Vec::new();
+    buf.try_reserve(size)?;
+    Ok(Self { buf })
+}
+
+// Bad — panics on OOM, unacceptable in kernel
+pub fn create(size: usize) -> Self {
+    Self { buf: vec![0u8; size] }
+}
+```

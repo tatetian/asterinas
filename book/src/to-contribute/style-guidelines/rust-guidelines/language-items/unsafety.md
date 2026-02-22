@@ -92,5 +92,62 @@ in the public API surface of OSTD
 or any crate with external users.
 Give such methods `pub(crate)` visibility at most.
 
+### U8. Reason about safety at the module boundary
+
+The safety of an `unsafe` block
+depends on ALL code that can access the same private state.
+Encapsulate unsafe abstractions
+in the smallest possible module
+to minimize the "audit surface."
+Any code in the same module
+that can modify relied-upon fields
+is part of the safety argument.
+
+```rust
+// Good — small, focused module limits the audit surface
+mod frame_allocator {
+    /// Invariant: `next` is always a valid frame index.
+    struct FrameAlloc {
+        next: usize,
+        // ...
+    }
+
+    impl FrameAlloc {
+        pub fn alloc(&mut self) -> PhysAddr {
+            // SAFETY: `next` is always valid (see invariant above).
+            // Only code in this module can modify `next`.
+            unsafe { self.alloc_frame_unchecked(self.next) }
+        }
+    }
+}
+```
+
+### U9. Ensure panic safety when temporarily violating invariants
+
+If an `unsafe` block temporarily violates an invariant,
+ensure a panic at any point
+does not leave data in an invalid state.
+Use drop guards
+(a local struct implementing `Drop`)
+to restore invariants
+if a closure or `?` causes early exit.
+This is critical in kernel code where panics may be caught.
+
+```rust
+// Good — drop guard restores the length
+// even if the closure panics
+struct SetLenOnDrop<'a> {
+    vec: &'a mut Vec<u8>,
+    len: usize,
+}
+
+impl Drop for SetLenOnDrop<'_> {
+    fn drop(&mut self) {
+        // SAFETY: `len` is always <= capacity.
+        unsafe { self.vec.set_len(self.len); }
+    }
+}
+```
+
 For more on writing sound unsafe code,
 see [The Rustonomicon](https://doc.rust-lang.org/nomicon/).

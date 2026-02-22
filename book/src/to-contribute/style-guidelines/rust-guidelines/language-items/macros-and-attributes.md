@@ -85,3 +85,46 @@ skip_macro_invocations = ["chmod", "mkmod", "ioc"]
   Skip formatting inside `chmod`, `mkmod`, and `ioc` macro calls.
 
 Run `cargo fmt` before submitting a pull request.
+
+### MA4. Prefer functions over macros when possible
+
+Use macros only for compile-time code generation,
+variadic arguments, conditional compilation,
+or syntax that must be expanded before type checking.
+Functions are easier to understand, debug, and test.
+
+```rust
+// Bad — a macro used where a function suffices
+macro_rules! add_one {
+    ($x:expr) => { $x + 1 };
+}
+
+// Good — a plain function
+fn add_one(x: usize) -> usize {
+    x + 1
+}
+```
+
+### MA5. Use `$crate::` paths in `macro_rules!` for hygiene
+
+Always reference items from the defining crate
+using `$crate::path::to::item`.
+This ensures macros work correctly
+when invoked from other crates.
+
+```rust
+// Good — $crate:: ensures correct resolution
+macro_rules! return_errno {
+    ($errno:expr) => {
+        return Err($crate::error::Error::new($errno))
+    };
+}
+
+// Bad — unqualified path breaks
+// when macro is used from another crate
+macro_rules! return_errno {
+    ($errno:expr) => {
+        return Err(error::Error::new($errno))
+    };
+}
+```
