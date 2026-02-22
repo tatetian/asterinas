@@ -1,23 +1,6 @@
-# Types and Traits (TT)
+# Types and Traits
 
-### TT1. Use generics to allow both owned and borrowed access
-
-Parameterize over the container type
-so callers can choose between `Arc`, `Box`,
-or a plain reference:
-
-```rust
-pub struct DmaStreamSlice<Dma: Deref<Target = DmaStream>> {
-    dma_stream: Dma,
-    offset: usize,
-    len: usize,
-}
-```
-
-This avoids forcing an `Arc::clone`
-when a `&DmaStream` reference suffices.
-
-### TT2. Prefer enum over trait objects for closed sets
+### Prefer enum over trait objects for closed sets
 
 When the set of variants is known and closed,
 an enum is preferable to `Box<dyn Trait>`
@@ -32,13 +15,7 @@ pub enum TermStatus {
 }
 ```
 
-### TT3. Use `Box<dyn Trait>` over `Arc<dyn Trait>` when sharing is unnecessary
-
-When a value has a single owner,
-`Box<dyn Trait>` avoids reference-counting overhead
-and makes ownership clearer.
-
-### TT4. Use types to encode invariants
+### Use types to encode invariants
 
 Leverage the type system
 to make illegal states unrepresentable.
@@ -61,7 +38,11 @@ impl AccessMode {
 }
 ```
 
-### TT5. Collapse redundant state into simpler types
+See also:
+PR [#2265](https://github.com/asterinas/asterinas/pull/2265#discussion_r2266214191)
+and [#2514](https://github.com/asterinas/asterinas/pull/2514).
+
+### Collapse redundant state into simpler types
 
 Redundant wrapper types,
 unnecessary `Inner` structs,
@@ -84,7 +65,7 @@ pub struct Socket {
 }
 ```
 
-### TT6. Eliminate redundant `Option` wrapping
+### Eliminate redundant `Option` wrapping
 
 When a type is always present,
 wrapping it in `Option`
@@ -103,49 +84,6 @@ pub struct Thread {
 }
 ```
 
-### TT7. Traits must provide compile-time guarantees
-
-A trait should only be implemented
-when it can guarantee the invariant
-for all instances.
-If the property is not enforced by the type system,
-a trait is the wrong tool.
-
-### TT10. Derive standard traits proactively
-
-Every public type should derive
-all applicable standard traits:
-`Debug` (always),
-`Clone` (when logically copyable),
-`Default` (when a natural default exists),
-`PartialEq`/`Eq` (when equality is meaningful).
-Missing derives force downstream code
-into unnecessary workarounds.
-
-```rust
-// Good — all applicable standard traits derived
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub struct PageFaultInfo {
-    pub address: usize,
-    pub flags: PageFaultFlags,
-}
-```
-
-### TT11. Use `#[non_exhaustive]` on public enums and structs that may grow
-
-Mark public enums and structs
-with `#[non_exhaustive]`
-when new variants or fields may be added in the future.
-This reserves the right to extend the type
-without breaking downstream code.
-
-```rust
-// Good — new variants can be added
-// without a semver-breaking change
-#[derive(Debug)]
-#[non_exhaustive]
-pub enum VmEvent {
-    PageFault(PageFaultInfo),
-    AccessFault(AccessFaultInfo),
-}
-```
+See also:
+PR [#2887](https://github.com/asterinas/asterinas/pull/2887#discussion_r2692231741)
+and [#2151](https://github.com/asterinas/asterinas/pull/2151).

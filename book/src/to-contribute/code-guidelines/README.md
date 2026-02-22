@@ -28,4 +28,4 @@ The coding guidelines are organized into the following pages:
 
 The guidelines represent the _desired_ state.
 If conflicting cases were found in the codebase,
-they should be fied according to the guidelines.
+they should be fixed according to the guidelines.

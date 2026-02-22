@@ -1,4 +1,4 @@
-# Naming (RN)
+# Naming
 
 Asterinas enforces strict, Rust-idiomatic naming
 across the entire codebase.
@@ -6,7 +6,7 @@ Names must be accurate, unabbreviated,
 and follow
 [Rust API Guidelines on naming](https://rust-lang.github.io/api-guidelines/naming.html).
 
-### RN1. Omit `get_` prefix on simple getters
+### Omit `get_` prefix on simple getters
 
 Simple accessor methods use the bare noun,
 not a `get_` prefix.
@@ -27,7 +27,11 @@ pub fn map_size(&self) -> usize {
 pub fn get_map_to_addr(&self) -> Vaddr { ... }
 ```
 
-### RN2. Use full English words, not abbreviations
+See also:
+PR [#170](https://github.com/asterinas/asterinas/pull/170#discussion_r1154020166)
+and [#424](https://github.com/asterinas/asterinas/pull/424#discussion_r1387565451).
+
+### Use full English words, not abbreviations
 
 Abbreviated or jargon-derived names
 must be replaced with accurate, full English words.
@@ -43,7 +47,10 @@ sb_options
 subdir
 ```
 
-### RN3. Names must accurately reflect behavior
+See also:
+PR [#170](https://github.com/asterinas/asterinas/pull/170#discussion_r1154551016).
+
+### Names must accurately reflect behavior
 
 If a name can be misread
 to imply the wrong behavior, side effect, or ownership,
@@ -57,7 +64,11 @@ removed_nr_subscribers
 deleted_watches
 ```
 
-### RN4. Follow Rust CamelCase and acronym capitalization
+See also:
+PR [#1488](https://github.com/asterinas/asterinas/pull/1488#discussion_r1825441287)
+and [#2964](https://github.com/asterinas/asterinas/pull/2964#discussion_r2789739882).
+
+### Follow Rust CamelCase and acronym capitalization
 
 Type names follow Rust's CamelCase convention.
 Acronyms are title-cased per the Rust API Guidelines:
@@ -76,7 +87,7 @@ NVMe
 TCP
 ```
 
-### RN5. End closure variables with `_fn`
+### End closure variables with `_fn`
 
 Variables holding closures or function pointers
 must signal they are callable by ending with `_fn`.
@@ -97,37 +108,11 @@ let expired_fn = move |_guard: TimerGuard| {
 };
 ```
 
-### RN6. Avoid plural type names
+See also:
+PR [#395](https://github.com/asterinas/asterinas/pull/395#discussion_r1402964415)
+and [#783](https://github.com/asterinas/asterinas/pull/783#discussion_r1593335375).
 
-Types representing a single conceptual unit
-should not be named in the plural form,
-as it creates awkward names
-when creating collections of the type.
-
-```rust
-// Good
-LocalWorkerPool
-
-// Bad — "a Vec<LocalWorkers>" is confusing
-LocalWorkers
-```
-
-### RN7. Prefer domain-accurate terminology
-
-Choose accurate English or Rust-ecosystem terminology
-rather than inheriting poorly-chosen Linux names.
-Think about what is best for Asterinas,
-not what Linux happened to call it.
-
-```rust
-// Good — descriptive and accurate
-pub struct SoftIrqLine { ... }
-
-// Bad — inherited jargon with no clear meaning
-pub struct Tasklet { ... }
-```
-
-### RN8. Use assertion-style boolean names
+### Use assertion-style boolean names
 
 Boolean variables, fields, and functions
 should read as assertions of fact.
@@ -148,4 +133,5 @@ let is_not_empty = !buf.is_empty();
 ```
 
 See also
-[General Guidelines — N7](../general-guidelines/README.md#n7-use-assertion-style-boolean-names).
+[General Guidelines](../general-guidelines/README.md#use-assertion-style-boolean-names);
+PR [#1488](https://github.com/asterinas/asterinas/pull/1488#discussion_r1841827039).

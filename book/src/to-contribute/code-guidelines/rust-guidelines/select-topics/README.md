@@ -3,26 +3,24 @@
 This section covers cross-cutting concerns
 that span multiple language items.
 Each page addresses a specific topic
-with numbered, actionable guidelines.
+with actionable guidelines.
 
 - **[Idiomatics](idiomatics.md)** —
-  The `?` operator, `Drop` cleanup, `impl Trait`,
-  and established conventions.
+  The `?` operator and interior mutability primitives.
 - **[Concurrency and Races](concurrency-and-races.md)** —
-  Lock ordering, atomics, memory ordering,
-  spinlock discipline, and TOCTOU.
+  Lock ordering, spinlock discipline, atomics,
+  critical sections, and drop ordering.
 - **[Error Handling](error-handling.md)** —
-  Error propagation, `return_errno_with_message!`,
-  informative messages, and root-cause fixes.
+  Error propagation, informative messages,
+  root-cause fixes, and `debug_assert`.
 - **[Performance](performance.md)** —
-  Hot-path complexity, benchmarking,
-  zero-cost abstractions, and avoiding premature optimization.
+  Hot-path complexity, unnecessary copies,
+  and evidence-based optimization.
 - **[Logging](logging.md)** —
-  Log levels, message formatting,
-  the `log` crate, and feature-gated verbose output.
+  The `log` crate and appropriate log levels.
 - **[Memory and Resource Management](memory-and-resource-management.md)** —
-  RAII, `Box::leak` avoidance, typed vs. untyped memory,
-  and `unsafe` marking for memory-affecting functions.
+  RAII and `unsafe` marking
+  for memory-safety-affecting functions.
 - **[Unit Testing](unit-testing.md)** —
-  Test naming, assertions, regression tests,
-  and test code style.
+  Test naming, regression tests,
+  and testing user-visible behavior.

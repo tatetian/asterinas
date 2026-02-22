@@ -1,6 +1,6 @@
-# Unsafety (U)
+# Unsafety
 
-### U1. Justify every use of `unsafe`
+### Justify every use of `unsafe`
 
 Every `unsafe` block must have a preceding `// SAFETY:` comment
 that justifies why the operation is sound.
@@ -19,7 +19,11 @@ unsafe {
 }
 ```
 
-### U2. Document safety requirements
+See also:
+PR [#2958](https://github.com/asterinas/asterinas/pull/2958)
+and [#836](https://github.com/asterinas/asterinas/pull/836).
+
+### Document safety requirements
 
 All `unsafe` functions and traits
 must include a `# Safety` section in their doc comments
@@ -38,7 +42,7 @@ not implementation details or side effects.
 pub unsafe fn read_phys<T>(addr: usize) -> T { ... }
 ```
 
-### U3. Deny unsafe code in `kernel/`
+### Deny unsafe code in `kernel/`
 
 All crates under `kernel/` must deny unsafe:
 
@@ -50,7 +54,11 @@ Only OSTD (`ostd/`) crates may contain `unsafe` code.
 If a kernel crate requires an unsafe operation,
 the functionality should be provided as a safe API in OSTD.
 
-### U4. Minimize and encapsulate `unsafe` scope
+See also:
+PR [#2498](https://github.com/asterinas/asterinas/pull/2498)
+and [#2012](https://github.com/asterinas/asterinas/pull/2012).
+
+### Minimize and encapsulate `unsafe` scope
 
 Repeated `unsafe` patterns
 should be wrapped in a single safe or unsafe helper.
@@ -69,30 +77,11 @@ fn read_port(&self) -> u8 {
 }
 ```
 
-### U5. Soundness must be argued, not assumed
+See also:
+PR [#2958](https://github.com/asterinas/asterinas/pull/2958)
+and [#2498](https://github.com/asterinas/asterinas/pull/2498).
 
-Implementors must reason explicitly about soundness.
-A `// SAFETY:` comment that says "this is safe" without evidence
-is not acceptable.
-
-### U6. Unsafe traits must have well-defined invariants
-
-When a trait is `unsafe` to implement,
-the doc must clearly state the invariants
-the implementor must uphold.
-Safety requirements should be
-stricter than all types that implement the trait,
-rather than claiming the requirement
-depends on the concrete type.
-
-### U7. Do not expose `unsafe` functions in the public API
-
-Unsafe functions must not appear
-in the public API surface of OSTD
-or any crate with external users.
-Give such methods `pub(crate)` visibility at most.
-
-### U8. Reason about safety at the module boundary
+### Reason about safety at the module boundary
 
 The safety of an `unsafe` block
 depends on ALL code that can access the same private state.
@@ -121,33 +110,3 @@ mod frame_allocator {
     }
 }
 ```
-
-### U9. Ensure panic safety when temporarily violating invariants
-
-If an `unsafe` block temporarily violates an invariant,
-ensure a panic at any point
-does not leave data in an invalid state.
-Use drop guards
-(a local struct implementing `Drop`)
-to restore invariants
-if a closure or `?` causes early exit.
-This is critical in kernel code where panics may be caught.
-
-```rust
-// Good — drop guard restores the length
-// even if the closure panics
-struct SetLenOnDrop<'a> {
-    vec: &'a mut Vec<u8>,
-    len: usize,
-}
-
-impl Drop for SetLenOnDrop<'_> {
-    fn drop(&mut self) {
-        // SAFETY: `len` is always <= capacity.
-        unsafe { self.vec.set_len(self.len); }
-    }
-}
-```
-
-For more on writing sound unsafe code,
-see [The Rustonomicon](https://doc.rust-lang.org/nomicon/).

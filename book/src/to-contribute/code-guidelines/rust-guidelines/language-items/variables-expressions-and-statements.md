@@ -1,6 +1,6 @@
-# Variables, Expressions, and Statements (VE)
+# Variables, Expressions, and Statements
 
-### VE1. Use checked or saturating arithmetic
+### Use checked or saturating arithmetic
 
 Use checked or saturating arithmetic
 for operations that could overflow.
@@ -12,7 +12,7 @@ debug_assert!(self.align.is_multiple_of(PAGE_SIZE));
 debug_assert!(self.align.is_power_of_two());
 ```
 
-### VE2. Prefer immutable bindings
+### Prefer immutable bindings
 
 Declare variables with `let` rather than `let mut`
 whenever possible.
@@ -21,23 +21,7 @@ are far easier to reason about.
 Use mutable bindings only when mutation
 is genuinely required.
 
-### VE3. Initialize close to first use
-
-Declare and initialize each variable
-as close as possible to where it is first used.
-A large gap between declaration and usage
-widens the window for errors
-and forces readers to hold more context in memory.
-
-### VE4. Use each variable for exactly one purpose
-
-Do not reuse a variable for a different purpose
-later in the same scope.
-If you need a new value, create a new binding.
-Reusing names for unrelated data
-is a common source of subtle bugs.
-
-### VE5. Introduce explaining variables
+### Introduce explaining variables
 
 Break down complex expressions
 by assigning intermediate results to well-named variables.
@@ -54,32 +38,7 @@ debug_assert!(is_page_aligned && is_within_range);
 debug_assert!(addr % PAGE_SIZE == 0 && addr < max_addr);
 ```
 
-### VE6. Encapsulate complex conditionals in named predicates
-
-When an `if` condition involves
-more than two conjuncts or disjuncts,
-or when its meaning is not immediately obvious,
-extract the condition into a named boolean method.
-The method name should describe the condition
-in problem-domain terms.
-
-```rust
-// Good — intent is clear at the call site
-if self.is_eligible_for_reclaim() { ... }
-
-impl Page {
-    fn is_eligible_for_reclaim(&self) -> bool {
-        self.ref_count() == 1
-            && !self.is_pinned()
-            && self.age() > RECLAIM_THRESHOLD
-    }
-}
-
-// Bad — reader must parse a compound expression
-if self.ref_count() == 1
-    && !self.is_pinned()
-    && self.age() > RECLAIM_THRESHOLD
-{
-    ...
-}
-```
+See also:
+_The Art of Readable Code_, Chapter 8 "Breaking Down Giant Expressions";
+PR [#2083](https://github.com/asterinas/asterinas/pull/2083#discussion_r2512772091)
+and [#643](https://github.com/asterinas/asterinas/pull/643#discussion_r1497243812).

@@ -3,30 +3,29 @@
 This section covers conventions
 for specific Rust language constructs.
 Each page addresses one category of language item
-with numbered, actionable guidelines.
+with actionable guidelines.
 
 - **[Variables, Expressions, and Statements](variables-expressions-and-statements.md)** —
-  Checked arithmetic, immutability, and initialization.
+  Checked arithmetic, immutability,
+  and explaining variables.
 - **[Functions and Methods](functions-and-methods.md)** —
-  Early returns, iterators, builders, and helper extraction.
+  Nesting and early returns, helper extraction,
+  function size, and flag arguments.
 - **[Types and Traits](types-and-traits.md)** —
-  Generics, enums vs. trait objects,
-  type-level invariants, standard trait deriving,
-  `#[non_exhaustive]`, and simplification.
+  Enums vs. trait objects, type-level invariants,
+  state simplification, and redundant `Option` elimination.
 - **[Comments and Documentation](comments-and-documentation.md)** —
   Doc comment formatting, RFC 505, rustdoc links,
-  and public API coverage.
+  module-level docs, dead code, and public API coverage.
 - **[Unsafety](unsafety.md)** —
   SAFETY comments, `# Safety` sections,
-  scope minimization, module-boundary reasoning,
-  panic safety, and soundness reasoning.
+  `deny(unsafe_code)` in kernel crates,
+  scope minimization, and module-boundary reasoning.
 - **[Modules and Crates](modules-and-crates.md)** —
-  Visibility, workspace dependencies, imports,
-  and module organization.
+  Visibility, encapsulation, workspace dependencies,
+  and import conventions.
 - **[Macros and Attributes](macros-and-attributes.md)** —
   Lint suppression, `#[expect]`, dead code policy,
-  `rustfmt` configuration, macro hygiene,
-  and functions vs. macros.
+  `rustfmt` configuration, and functions vs. macros.
 - **[Conditional Compilation](conditional-compilation.md)** —
-  Architecture selection, feature gates,
-  and runtime dispatch.
+  Architecture selection with `cfg` attributes.

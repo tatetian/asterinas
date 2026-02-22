@@ -1,6 +1,6 @@
-# Macros and Attributes (MA)
+# Macros and Attributes
 
-### MA1. Suppress lints at the narrowest scope
+### Suppress lints at the narrowest scope
 
 When suppressing lints,
 the suppression should affect as little scope as possible.
@@ -39,7 +39,7 @@ enum SomeEnum {
 }
 ```
 
-### MA2. When to `#[expect(dead_code)]`
+### When to `#[expect(dead_code)]`
 
 In general, dead code should be avoided because
 _(i)_ it introduces unnecessary maintenance overhead, and
@@ -61,7 +61,7 @@ For example, it is fine to add ABI constants
 that are unused because the corresponding feature
 is partially implemented.
 
-### MA3. Format with `rustfmt`
+### Format with `rustfmt`
 
 Asterinas uses [rustfmt](https://rust-lang.github.io/rustfmt/)
 with a project-wide `rustfmt.toml`:
@@ -86,7 +86,7 @@ skip_macro_invocations = ["chmod", "mkmod", "ioc"]
 
 Run `cargo fmt` before submitting a pull request.
 
-### MA4. Prefer functions over macros when possible
+### Prefer functions over macros when possible
 
 Use macros only for compile-time code generation,
 variadic arguments, conditional compilation,
@@ -102,29 +102,5 @@ macro_rules! add_one {
 // Good — a plain function
 fn add_one(x: usize) -> usize {
     x + 1
-}
-```
-
-### MA5. Use `$crate::` paths in `macro_rules!` for hygiene
-
-Always reference items from the defining crate
-using `$crate::path::to::item`.
-This ensures macros work correctly
-when invoked from other crates.
-
-```rust
-// Good — $crate:: ensures correct resolution
-macro_rules! return_errno {
-    ($errno:expr) => {
-        return Err($crate::error::Error::new($errno))
-    };
-}
-
-// Bad — unqualified path breaks
-// when macro is used from another crate
-macro_rules! return_errno {
-    ($errno:expr) => {
-        return Err(error::Error::new($errno))
-    };
 }
 ```

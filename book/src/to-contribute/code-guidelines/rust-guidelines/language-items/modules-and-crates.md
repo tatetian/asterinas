@@ -1,6 +1,6 @@
-# Modules and Crates (MC)
+# Modules and Crates
 
-### MC1. Default to the narrowest visibility
+### Default to the narrowest visibility
 
 Start private,
 then widen to `pub(super)`, `pub(crate)`, or `pub`
@@ -19,22 +19,18 @@ pub(super) fn init() -> Result<(), I8042ControllerError> {
 pub static I8042_CONTROLLER: ...
 ```
 
-### MC2. Avoid redundant visibility qualifiers
+See also:
+PR [#2951](https://github.com/asterinas/asterinas/pull/2951)
+and [#2605](https://github.com/asterinas/asterinas/pull/2605#discussion_r2720506912).
 
-Adding `pub(crate)` to methods
-of a `pub(crate)` type is redundant noise.
-Similarly, `pub` on items inside a private module
-only affects accessibility within the item,
-not from outside.
-
-### MC3. Encapsulate fields behind getters
+### Encapsulate fields behind getters
 
 Do not make fields public
 when a simple getter method would do.
 The getter provides the right place
 for naming conventions and future evolution.
 
-### MC4. Use workspace dependencies
+### Use workspace dependencies
 
 Always declare shared dependencies
 in the workspace `[workspace.dependencies]` table
@@ -53,7 +49,7 @@ ostd.workspace = true
 bitflags.workspace = true
 ```
 
-### MC5. Follow the three-group import convention
+### Follow the three-group import convention
 
 Imports follow a three-group pattern
 enforced by the `rustfmt.toml` settings:
@@ -84,23 +80,3 @@ use crate::{
     prelude::*,
 };
 ```
-
-### MC6. One logical concept per file
-
-When a file grows long
-or contains multiple distinct concepts, split it.
-Each major data structure or subsystem entry point
-deserves its own file.
-
-### MC7. Module hierarchy mirrors logical relationships
-
-Directory and module structure
-should reflect conceptual relationships.
-Tightly coupled types
-belong under a shared parent module.
-
-### MC8. Place symbols at the correct abstraction layer
-
-Functions belonging to a specific subsystem
-should be placed in that subsystem's module,
-not hoisted to the crate root.

@@ -1,6 +1,6 @@
-# Functions and Methods (FM)
+# Functions and Methods
 
-### FM1. Minimize nesting; use early returns and `let-else`
+### Minimize nesting; use early returns and `let-else`
 
 Minimize nesting depth.
 Code nested more than three levels deep
@@ -29,31 +29,11 @@ pub(crate) fn init() {
 }
 ```
 
-### FM2. Prefer iterators over collecting into `Vec`
+See also:
+PR [#2877](https://github.com/asterinas/asterinas/pull/2877#discussion_r2685861741)
+and [#2445](https://github.com/asterinas/asterinas/pull/2445#discussion_r2769320458).
 
-Expose an `iter()` method
-rather than a method that collects all items into a `Vec`.
-Iterators give callers flexibility
-to choose between holding a lock while iterating
-or collecting into a container.
-
-```rust
-// Good — returns an iterator
-pub fn fds_and_files(
-    &self,
-) -> impl Iterator<Item = (FileDesc, &'_ Arc<dyn FileLike>)> {
-    self.table
-        .idxes_and_items()
-        .map(|(idx, entry)| (idx as FileDesc, entry.file()))
-}
-
-// Bad — forces allocation
-pub fn fds_and_files(&self) -> Vec<(FileDesc, Arc<dyn FileLike>)> {
-    // ...
-}
-```
-
-### FM3. Extract coherent logic into named helpers
+### Extract coherent logic into named helpers
 
 Long or complex sequences forming a coherent sub-task
 should be extracted into named helper functions
@@ -78,7 +58,11 @@ pub fn sys_mmap(addr: Vaddr, len: usize, ...) -> Result<Vaddr> {
 }
 ```
 
-### FM4. Keep functions small and focused
+See also:
+PR [#2929](https://github.com/asterinas/asterinas/pull/2929#discussion_r2757234577)
+and [#2265](https://github.com/asterinas/asterinas/pull/2265#discussion_r2266214191).
+
+### Keep functions small and focused
 
 Each function should do one thing,
 do it well, and do it only.
@@ -91,42 +75,10 @@ Do not mix levels of abstraction:
 a syscall handler should read like a specification;
 byte-level manipulation belongs in a helper.
 
-### FM5. Use the builder pattern for complex construction
+See also:
+PR [#639](https://github.com/asterinas/asterinas/pull/639#discussion_r1524629393).
 
-When constructing a struct involves many fields
-or optional configuration,
-the builder pattern avoids requiring callers
-to fill every field directly.
-
-```rust
-let vmo = VmoOptions::new(page_count)
-    .flags(VmoFlags::RESIZABLE)
-    .alloc()
-    .unwrap();
-```
-
-### FM6. Place new methods at a logical position
-
-Insert new methods at a logical position
-within the existing `impl` block —
-not at the very end by default.
-Group related methods together
-and separate groups with blank lines.
-
-### FM7. Limit function length
-
-Functions should generally be under 50 lines.
-Functions over 50 lines
-should be reviewed for extraction opportunities.
-Functions over 100 lines
-require summary comments for each logical section.
-
-Legitimate exceptions include
-initialization sequences, state machines,
-and `match` expressions on large enums.
-These are guidelines, not hard limits.
-
-### FM8. Avoid flag arguments
+### Avoid flag arguments
 
 A boolean parameter that selects between
 two behaviors signals the function does two things.
