@@ -115,7 +115,7 @@ and creates the false impression
 that it is still relevant.
 
 See also
-[General Guidelines — C9](../../general-guidelines/themes.md#c9-never-commit-commented-out-code).
+[General Guidelines — C9](../../general-guidelines/README.md#c9-never-commit-commented-out-code).
 
 ### D11. Delete dead code aggressively
 

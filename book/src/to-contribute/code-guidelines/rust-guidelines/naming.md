@@ -148,4 +148,4 @@ let is_not_empty = !buf.is_empty();
 ```
 
 See also
-[General Guidelines — N7](../general-guidelines/themes.md#n7-use-assertion-style-boolean-names).
+[General Guidelines — N7](../general-guidelines/README.md#n7-use-assertion-style-boolean-names).

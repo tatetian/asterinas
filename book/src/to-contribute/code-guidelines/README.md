@@ -1,18 +1,14 @@
-# Style Guidelines
+# Coding Guidelines
 
 This section describes the coding and collaboration conventions
 for the Asterinas project.
-Consistent style makes the codebase easier to read, review, and maintain.
+These guidelines aim to promote high-quality code
+that are clean, consistent, maintainable, correct, and efficient.
 
-These guidelines complement the
-[Rust API Guidelines](https://rust-lang.github.io/api-guidelines/)
-and are derived from recurring patterns (and anti-patterns)
-observed in code reviews.
-
-The style guidelines are organized into the following pages:
+The coding guidelines are organized into the following pages:
 
 - **[General Guidelines](general-guidelines/README.md)** —
-  Philosophy, principles, and language-agnostic themes
+  Language-agnostic actionable advice
   covering naming, comments, layout, formatting,
   and API design.
 - **[Rust Guidelines](rust-guidelines/README.md)** —
@@ -29,3 +25,7 @@ The style guidelines are organized into the following pages:
 - **[Assembly Guidelines](asm-guidelines.md)** —
   Section definitions, function definitions,
   and x86-64/RISC-V conventions.
+
+The guidelines represent the _desired_ state.
+If conflicting cases were found in the codebase,
+they should be fied according to the guidelines.

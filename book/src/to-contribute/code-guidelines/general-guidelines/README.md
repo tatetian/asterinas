@@ -1,7 +1,9 @@
-# Themes
+# General Guidelines
 
 Concrete, actionable advice organized into themes.
 Each item applies regardless of programming language.
+For the underlying philosophy, see
+[How These Guidelines Are Written](../how-these-guidelines-are-written.md).
 For Rust-specific advice, see
 [Rust Guidelines](../rust-guidelines/README.md).
 
