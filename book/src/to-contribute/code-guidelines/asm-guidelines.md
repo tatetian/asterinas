@@ -1,16 +1,17 @@
 # Assembly Guidelines
 
-## Define sections
+## Sections
 
-To define built-in sections, such as the text section,
-it is preferable to use the short directive, e.g., `.text`.
-For other sections,
-the section directive with the desired flags and type should be used,
-e.g., `.section ".bsp_boot", "awx", @progbits`.
+### Use the correct section directive (`section-directives`) {#section-directives}
 
-To ensure consistency and clarity,
-a blank line should follow each section definition,
-creating a separate code block for each definition.
+For built-in sections, use the short directive (e.g., `.text`).
+For custom sections,
+use the `.section` directive with flags and type
+(e.g., `.section ".bsp_boot", "awx", @progbits`).
+
+A blank line should follow each section definition
+to visually separate it from the code that follows.
+
 ```asm
 .section ".bsp_boot.stack", "aw", @nobits
 
@@ -20,9 +21,14 @@ boot_stack_bottom:
 boot_stack_top:
 ```
 
+### Place code-width directives after the section definition (`code-width-directives`) {#code-width-directives}
+
 In x86-64, if an executable section contains only 64-bit code,
-the `.code64` directive should be placed directly after the section definition.
-The same applies to the `.code32` directive for 32-bit code.
+place the `.code64` directive directly after the section definition.
+The same applies to `.code32` for 32-bit code.
+In mixed sections, treat `.code64` and `.code32`
+as function attributes (see below).
+
 ```asm
 .text
 .code64
@@ -33,11 +39,15 @@ foo:
    ret
 ```
 
-## Define functions
+## Functions
 
-Function attributes, such as `.global` and `.align`,
-should be placed directly before the function.
-These function attributes should not be indented.
+### Place attributes directly before the function (`function-attributes`) {#function-attributes}
+
+Function attributes (`.global`, `.align`)
+should be placed directly before the function label
+and should not be indented.
+Prefer `.global` over `.globl` for clarity.
+
 ```asm
 .align 4
 .global foo
@@ -46,36 +56,12 @@ foo:
    ret
 ```
 
-The assembler treats the directives `.global` and `.globl` as the same.
-For clarity, however, `.global` is preferred.
+### Add `.type` and `.size` for Rust-callable functions (`type-and-size`) {#type-and-size}
 
-Note that a Rust crate is a single translation unit, so `global_asm!` labels in
-different modules within the same crate share the same global namespace. In RISC-V,
-we have experienced that defining two labels with the same name in different modules
-can nondeterministically cause duplicate symbol error. The `.L` prefix does not help.
-Therefore, add custom prefixes to your labels to avoid name clashes. Nevertheless,
-use `.global` to export symbols that need to be visible within the same crate.
+Functions that can be called from Rust code
+should include the `.type` and `.size` directives.
+This gives debuggers a better understanding of the function.
 
-In x86-64, if an executable section contains a mix of 32-bit and 64-bit code,
-the `.code64` and `.code32` directives are treated as function attributes.
-```asm
-.code32
-.global foo32
-foo32:
-    mov eax, 1
-    ret
-
-.code64
-.global foo64
-foo64:
-    mov rax, 1
-    ret
-```
-
-Functions that can be called from Rust code should also
-include the `.type` and `.size` directives.
-This will give debuggers a better understanding of the function.
-For example:
 ```asm
 .global bar
 .type bar, @function
@@ -84,9 +70,50 @@ bar:
     ret
 .size bar, .-bar
 ```
-Note that this rule explicitly limits the functions to
-those that can be called from Rust code.
-Therefore, it does not apply to boot entry points,
-exception trampolines, or interrupt trampolines.
-They may not fit into the typical definition of "function",
+
+This does not apply to boot entry points,
+exception trampolines, or interrupt trampolines —
+they may not fit the typical definition of "function"
 and their sizes may be ill-defined.
+
+See also:
+PR [#2320](https://github.com/asterinas/asterinas/pull/2320).
+
+### Use unique label prefixes to avoid name clashes (`label-prefixes`) {#label-prefixes}
+
+A Rust crate is a single translation unit,
+so `global_asm!` labels in different modules
+within the same crate share the same global namespace.
+Add custom prefixes to labels to avoid name clashes
+(e.g., `bsp_` for BSP boot code, `ap_` for AP boot code).
+
+```asm
+// Good — prefixed to avoid clashes
+bsp_boot_stack_top:
+ap_boot_stack_top:
+
+// Bad — generic names risk duplication
+boot_stack_top:
+```
+
+See also:
+PR [#2571](https://github.com/asterinas/asterinas/pull/2571)
+and [#2573](https://github.com/asterinas/asterinas/pull/2573).
+
+### Prefer `.balign` over `.align` (`prefer-balign`) {#prefer-balign}
+
+The `.align` directive's behavior varies across architectures —
+on some it specifies a byte count,
+on others a power of two.
+Use `.balign` for unambiguous byte-count alignment.
+
+```asm
+// Good — unambiguous
+.balign 4096
+
+// Bad — architecture-dependent meaning
+.align 12
+```
+
+See also:
+PR [#2368](https://github.com/asterinas/asterinas/pull/2368).

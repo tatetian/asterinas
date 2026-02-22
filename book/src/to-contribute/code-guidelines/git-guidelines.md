@@ -2,6 +2,8 @@
 
 ## Commit Messages
 
+### Write imperative, descriptive subject lines (`imperative-subject`) {#imperative-subject}
+
 Write commit messages in imperative mood
 with the subject line at or below 72 characters.
 Wrap identifiers in backticks.
@@ -33,26 +35,39 @@ add a blank line after the subject
 followed by a body paragraph
 describing the _why_ behind the change.
 
+See also:
+PR [#2877](https://github.com/asterinas/asterinas/pull/2877)
+and [#2700](https://github.com/asterinas/asterinas/pull/2700).
+
 ## Commit Organization
+
+### One logical change per commit (`atomic-commits`) {#atomic-commits}
 
 Each commit should represent one logical change.
 Do not mix unrelated changes in a single commit.
-
-### Amend the Right Commit
-
 When fixing an issue discovered during review,
 use `git rebase -i` to amend the commit
 that introduced the issue
 rather than appending a fixup commit at the end.
 
-### Separate Refactoring from Features
+See also:
+PR [#2791](https://github.com/asterinas/asterinas/pull/2791)
+and [#2260](https://github.com/asterinas/asterinas/pull/2260).
+
+### Separate refactoring from features (`refactor-then-feature`) {#refactor-then-feature}
 
 If a feature requires preparatory refactoring,
 put the refactoring in its own commit(s)
 before the feature commit.
 This makes each commit easier to review and bisect.
 
+See also:
+PR [#2624](https://github.com/asterinas/asterinas/pull/2624)
+and [#2796](https://github.com/asterinas/asterinas/pull/2796).
+
 ## Pull Requests
+
+### Keep pull requests focused (`focused-prs`) {#focused-prs}
 
 Keep pull requests focused on a single topic.
 A PR that mixes a bug fix, a refactoring,
