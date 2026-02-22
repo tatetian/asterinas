@@ -4,7 +4,7 @@ Concurrency code is reviewed with extreme rigor.
 Lock ordering, atomic correctness, memory ordering,
 and race condition analysis are all demanded explicitly.
 
-### Establish and enforce a consistent lock order
+### Establish and enforce a consistent lock order (`lock-ordering`) {#lock-ordering}
 
 Two locks that can be acquired in different orders
 by different code paths
@@ -26,7 +26,7 @@ See also:
 PR [#2445](https://github.com/asterinas/asterinas/pull/2445)
 and [#2050](https://github.com/asterinas/asterinas/pull/2050).
 
-### Never do I/O or blocking operations while holding a spinlock
+### Never do I/O or blocking operations while holding a spinlock (`no-io-under-spinlock`) {#no-io-under-spinlock}
 
 Holding a spinlock while performing I/O
 or blocking operations is a deadlock hazard.
@@ -37,14 +37,14 @@ See also:
 PR [#925](https://github.com/asterinas/asterinas/pull/925)
 and [#1521](https://github.com/asterinas/asterinas/pull/1521).
 
-### Do not use atomics casually
+### Do not use atomics casually (`careful-atomics`) {#careful-atomics}
 
 When multiple atomic fields
 must be updated in concert, use a lock.
 Only use atomics when a single value
 is genuinely independent.
 
-### Critical sections must not be split across lock boundaries
+### Critical sections must not be split across lock boundaries (`atomic-critical-sections`) {#atomic-critical-sections}
 
 Operations that must be atomic
 (check + conditional action)
@@ -56,7 +56,7 @@ See also:
 PR [#2157](https://github.com/asterinas/asterinas/pull/2157)
 and [#2277](https://github.com/asterinas/asterinas/pull/2277).
 
-### Be mindful of drop ordering
+### Be mindful of drop ordering (`drop-ordering`) {#drop-ordering}
 
 When a value holds a lock guard or other RAII resource,
 ensure that the drop order

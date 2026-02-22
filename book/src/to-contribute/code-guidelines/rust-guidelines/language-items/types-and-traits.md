@@ -1,6 +1,6 @@
 # Types and Traits
 
-### Prefer enum over trait objects for closed sets
+### Prefer enum over trait objects for closed sets (`enum-over-dyn`) {#enum-over-dyn}
 
 When the set of variants is known and closed,
 an enum is preferable to `Box<dyn Trait>`
@@ -15,7 +15,7 @@ pub enum TermStatus {
 }
 ```
 
-### Use types to encode invariants
+### Use types to encode invariants (`rust-type-invariants`) {#rust-type-invariants}
 
 Leverage the type system
 to make illegal states unrepresentable.
@@ -42,7 +42,7 @@ See also:
 PR [#2265](https://github.com/asterinas/asterinas/pull/2265#discussion_r2266214191)
 and [#2514](https://github.com/asterinas/asterinas/pull/2514).
 
-### Collapse redundant state into simpler types
+### Collapse redundant state into simpler types (`simplify-state`) {#simplify-state}
 
 Redundant wrapper types,
 unnecessary `Inner` structs,
@@ -65,7 +65,7 @@ pub struct Socket {
 }
 ```
 
-### Eliminate redundant `Option` wrapping
+### Eliminate redundant `Option` wrapping (`no-redundant-option`) {#no-redundant-option}
 
 When a type is always present,
 wrapping it in `Option`

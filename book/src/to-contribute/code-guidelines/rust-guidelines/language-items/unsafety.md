@@ -1,6 +1,6 @@
 # Unsafety
 
-### Justify every use of `unsafe`
+### Justify every use of `unsafe` (`safety-comments`) {#safety-comments}
 
 Every `unsafe` block must have a preceding `// SAFETY:` comment
 that justifies why the operation is sound.
@@ -23,7 +23,7 @@ See also:
 PR [#2958](https://github.com/asterinas/asterinas/pull/2958)
 and [#836](https://github.com/asterinas/asterinas/pull/836).
 
-### Document safety requirements
+### Document safety requirements (`safety-docs`) {#safety-docs}
 
 All `unsafe` functions and traits
 must include a `# Safety` section in their doc comments
@@ -42,7 +42,7 @@ not implementation details or side effects.
 pub unsafe fn read_phys<T>(addr: usize) -> T { ... }
 ```
 
-### Deny unsafe code in `kernel/`
+### Deny unsafe code in `kernel/` (`deny-unsafe-kernel`) {#deny-unsafe-kernel}
 
 All crates under `kernel/` must deny unsafe:
 
@@ -58,7 +58,7 @@ See also:
 PR [#2498](https://github.com/asterinas/asterinas/pull/2498)
 and [#2012](https://github.com/asterinas/asterinas/pull/2012).
 
-### Minimize and encapsulate `unsafe` scope
+### Minimize and encapsulate `unsafe` scope (`minimize-unsafe`) {#minimize-unsafe}
 
 Repeated `unsafe` patterns
 should be wrapped in a single safe or unsafe helper.
@@ -81,7 +81,7 @@ See also:
 PR [#2958](https://github.com/asterinas/asterinas/pull/2958)
 and [#2498](https://github.com/asterinas/asterinas/pull/2498).
 
-### Reason about safety at the module boundary
+### Reason about safety at the module boundary (`module-boundary-safety`) {#module-boundary-safety}
 
 The safety of an `unsafe` block
 depends on ALL code that can access the same private state.

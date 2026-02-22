@@ -1,6 +1,6 @@
 # Memory and Resource Management
 
-### Use RAII for all resource acquisition and release
+### Use RAII for all resource acquisition and release (`raii`) {#raii}
 
 Resources — IRQ enable/disable state, port numbers,
 file handles, DMA buffers, lock guards —
@@ -30,7 +30,7 @@ See also:
 PR [#164](https://github.com/asterinas/asterinas/pull/164)
 and [#720](https://github.com/asterinas/asterinas/pull/720).
 
-### Mark memory-safety-affecting functions `unsafe`
+### Mark memory-safety-affecting functions `unsafe` (`unsafe-memory-ops`) {#unsafe-memory-ops}
 
 Functions that access raw I/O memory,
 write to MSRs, map physical addresses,
@@ -50,4 +50,4 @@ pub unsafe fn read_phys<T>(addr: usize) -> T { ... }
 ```
 
 See also:
-[Unsafety](../language-items/unsafety.md#document-safety-requirements).
+[Unsafety](../language-items/unsafety.md#safety-docs).

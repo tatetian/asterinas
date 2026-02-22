@@ -151,7 +151,7 @@ the line is included when the guideline is opinionated or non-obvious.
 Below is a sample guideline demonstrating these conventions:
 
 ````md
-### Introduce explaining variables {#explain-variables}
+### Introduce explaining variables (`explain-variables`) {#explain-variables}
 
 Break down complex expressions
 by assigning intermediate results to well-named variables.
@@ -177,6 +177,6 @@ and [#1585](https://github.com/asterinas/asterinas/pull/1585#discussion_r1835925
 ````
 
 This example demonstrates:
-- A stable short name (`explain-variables`) as an anchor
+- A stable short name (`explain-variables`) shown parenthetically and used as the heading anchor
 - A one-sentence actionable recommendation followed by a code example
 - A "See also" line ordered as: literature, PR reviews, codebase examples

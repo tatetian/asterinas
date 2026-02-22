@@ -5,7 +5,7 @@ Changes to hot paths must be benchmarked.
 Unnecessary copies, allocations,
 and O(n) algorithms are rejected.
 
-### Avoid O(n) algorithms on hot paths
+### Avoid O(n) algorithms on hot paths (`no-linear-hot-paths`) {#no-linear-hot-paths}
 
 System call dispatch, scheduler enqueue,
 and frequent query operations
@@ -34,7 +34,7 @@ See also:
 PR [#1790](https://github.com/asterinas/asterinas/pull/1790)
 and [#1880](https://github.com/asterinas/asterinas/pull/1880).
 
-### Minimize unnecessary copies and allocations
+### Minimize unnecessary copies and allocations (`minimize-copies`) {#minimize-copies}
 
 Extra data copies —
 serializing to a stack buffer before writing,
@@ -59,7 +59,7 @@ See also:
 PR [#2912](https://github.com/asterinas/asterinas/pull/2912)
 and [#1521](https://github.com/asterinas/asterinas/pull/1521).
 
-### No premature optimization without evidence
+### No premature optimization without evidence (`no-premature-optimization`) {#no-premature-optimization}
 
 Performance optimizations
 must be justified with data.

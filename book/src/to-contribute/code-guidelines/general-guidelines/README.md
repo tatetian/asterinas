@@ -9,7 +9,7 @@ For Rust-specific advice, see
 
 ## Names
 
-### Be descriptive
+### Be descriptive (`descriptive-names`) {#descriptive-names}
 
 Choose names that convey meaning at the point of use.
 Avoid single-letter names and ambiguous abbreviations.
@@ -20,7 +20,7 @@ The optimal name length is 10–16 characters on average;
 shorter names lack meaning,
 longer names obscure visual structure.
 
-### Avoid misleading names
+### Avoid misleading names (`no-misleading-names`) {#no-misleading-names}
 
 A name must accurately describe what it refers to.
 If the semantics of a function or variable change,
@@ -28,7 +28,7 @@ rename it to match the new behavior.
 Actively ask yourself
 "What else could this name mean?"
 
-### Encode units and important attributes in names
+### Encode units and important attributes in names (`encode-units`) {#encode-units}
 
 When the type does not encode the unit,
 the name must.
@@ -57,7 +57,7 @@ Where it cannot, the name must carry the information.
 See also:
 PR [#2796](https://github.com/asterinas/asterinas/pull/2796#discussion_r2646889913).
 
-### Use assertion-style boolean names
+### Use assertion-style boolean names (`bool-names`) {#bool-names}
 
 Boolean variables and functions
 should read as assertions of fact.
@@ -73,14 +73,14 @@ PR [#1488](https://github.com/asterinas/asterinas/pull/1488#discussion_r18418270
 
 ## Comments
 
-### Explain why, not how
+### Explain why, not how (`explain-why`) {#explain-why}
 
 Comments should explain the intent behind the code,
 not restate what the code does.
 If a comment merely paraphrases the code,
 it adds noise without insight.
 
-### Document design decisions
+### Document design decisions (`design-decisions`) {#design-decisions}
 
 When the code makes a non-obvious choice —
 a particular data structure, a locking strategy,
@@ -103,7 +103,7 @@ See also:
 PR [#2265](https://github.com/asterinas/asterinas/pull/2265#discussion_r2266220943)
 and [#2050](https://github.com/asterinas/asterinas/pull/2050#discussion_r2224106025).
 
-### Cite specifications and algorithm sources
+### Cite specifications and algorithm sources (`cite-sources`) {#cite-sources}
 
 When implementing behavior defined by
 an external specification or a non-trivial algorithm,
@@ -119,7 +119,7 @@ hardware reference manual, or academic paper.
 // as described in Knuth TAOCP Vol. 1, Section 2.5.
 ```
 
-### Never commit commented-out code
+### Never commit commented-out code (`no-commented-code`) {#no-commented-code}
 
 Commented-out code confuses readers,
 rots over time,
@@ -134,7 +134,7 @@ PR [#1880](https://github.com/asterinas/asterinas/pull/1880#discussion_r19829426
 
 ## Layout
 
-### One concept per file
+### One concept per file (`one-concept-per-file`) {#one-concept-per-file}
 
 When a file grows long or contains multiple distinct concepts,
 split it.
@@ -142,7 +142,7 @@ Each major data structure, each subsystem entry point,
 each significant abstraction
 deserves its own file.
 
-### Organize code for top-down reading
+### Organize code for top-down reading (`top-down-reading`) {#top-down-reading}
 
 Within functions,
 group related statements into logical "paragraphs"
@@ -160,7 +160,7 @@ enabling the file to be read top to bottom.
 
 ## Formatting
 
-### Format error messages consistently
+### Format error messages consistently (`error-message-format`) {#error-message-format}
 
 - Start with a lowercase letter
   (unless the first word is a proper noun or identifier).
@@ -174,7 +174,7 @@ enabling the file to be read top to bottom.
 
 ## API Design
 
-### Hide implementation details
+### Hide implementation details (`hide-impl-details`) {#hide-impl-details}
 
 Do not expose internal implementation details
 through public APIs.
@@ -189,11 +189,11 @@ Provide a direct method on the immediate object
 or pass only the specific object needed as a parameter.
 
 See also
-[Modules and Crates](../rust-guidelines/language-items/modules-and-crates.md#default-to-the-narrowest-visibility)
+[Modules and Crates](../rust-guidelines/language-items/modules-and-crates.md#narrow-visibility)
 for Rust-specific visibility rules.
 PR [#2951](https://github.com/asterinas/asterinas/pull/2951#discussion_r2766432889).
 
-### Use types to encode invariants
+### Use types to encode invariants (`type-invariants`) {#type-invariants}
 
 Leverage the type system
 to make illegal states unrepresentable.
@@ -204,7 +204,7 @@ See also:
 PR [#2265](https://github.com/asterinas/asterinas/pull/2265#discussion_r2266214191)
 and [#2514](https://github.com/asterinas/asterinas/pull/2514).
 
-### Fix root causes, not symptoms
+### Fix root causes, not symptoms (`fix-root-causes`) {#fix-root-causes}
 
 When a bug or invariant violation is identified,
 fix the root cause
@@ -217,7 +217,7 @@ See also
 for the Rust-specific formulation.
 PR [#2741](https://github.com/asterinas/asterinas/pull/2741).
 
-### Validate at boundaries, trust internally
+### Validate at boundaries, trust internally (`validate-at-boundaries`) {#validate-at-boundaries}
 
 Designate certain interfaces as validation boundaries.
 In Asterinas, syscall entry points

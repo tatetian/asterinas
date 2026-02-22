@@ -3,7 +3,7 @@
 For general testing principles, see
 [Testing Guidelines](../../testing-guidelines.md).
 
-### Name tests after observable behavior
+### Name tests after observable behavior (`behavior-test-names`) {#behavior-test-names}
 
 Name tests after the behavior
 or specification concept being verified,
@@ -20,7 +20,7 @@ fn read_from_closed_pipe_returns_zero()
 fn pipe_channel_ref_count_drops()
 ```
 
-### Require regression tests for every bug fix
+### Require regression tests for every bug fix (`regression-tests`) {#regression-tests}
 
 When a bug is fixed,
 a test that would have caught the bug
@@ -39,7 +39,7 @@ fn mmap_fixed_does_not_unmap_adjacent_region() {
 }
 ```
 
-### Test user-visible behavior, not implementation internals
+### Test user-visible behavior, not implementation internals (`test-visible-behavior`) {#test-visible-behavior}
 
 Unit tests should validate observable, user-facing outcomes.
 Testing implementation details makes tests brittle.

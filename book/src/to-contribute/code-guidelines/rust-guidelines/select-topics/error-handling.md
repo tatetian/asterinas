@@ -1,6 +1,6 @@
 # Error Handling
 
-### Propagate errors with `?`
+### Propagate errors with `?` (`propagate-errors`) {#propagate-errors}
 
 Use the `?` operator
 to propagate errors idiomatically.
@@ -16,17 +16,17 @@ pub(super) fn unlink(&self, name: &str) -> Result<()> {
 }
 ```
 
-### Error messages must be informative and consistent
+### Error messages must be informative and consistent (`informative-errors`) {#informative-errors}
 
 Error messages passed to `Error::with_message`
 or `expect()` must be descriptive
 and semantically consistent
 with the `Errno` they are paired with.
 
-See [General Guidelines — Formatting](../../general-guidelines/README.md#format-error-messages-consistently)
+See [General Guidelines — Formatting](../../general-guidelines/README.md#error-message-format)
 for message formatting rules.
 
-### Fix root causes, not symptoms
+### Fix root causes, not symptoms (`rust-fix-root-causes`) {#rust-fix-root-causes}
 
 When a bug or invariant violation is identified,
 fix the root cause
@@ -35,10 +35,10 @@ that paper over the symptom.
 Unnecessary guards hide real bugs.
 
 See also:
-[General Guidelines](../../general-guidelines/README.md#fix-root-causes-not-symptoms)
+[General Guidelines](../../general-guidelines/README.md#fix-root-causes)
 and PR [#2741](https://github.com/asterinas/asterinas/pull/2741).
 
-### Use `debug_assert` for correctness-only checks
+### Use `debug_assert` for correctness-only checks (`debug-assert`) {#debug-assert}
 
 Assertions verifying invariants
 that should never fail in correct code

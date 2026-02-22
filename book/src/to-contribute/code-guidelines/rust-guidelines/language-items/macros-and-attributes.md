@@ -1,6 +1,6 @@
 # Macros and Attributes
 
-### Suppress lints at the narrowest scope
+### Suppress lints at the narrowest scope (`narrow-lint-suppression`) {#narrow-lint-suppression}
 
 When suppressing lints,
 the suppression should affect as little scope as possible.
@@ -39,7 +39,7 @@ enum SomeEnum {
 }
 ```
 
-### When to `#[expect(dead_code)]`
+### When to `#[expect(dead_code)]` (`expect-dead-code`) {#expect-dead-code}
 
 In general, dead code should be avoided because
 _(i)_ it introduces unnecessary maintenance overhead, and
@@ -61,7 +61,7 @@ For example, it is fine to add ABI constants
 that are unused because the corresponding feature
 is partially implemented.
 
-### Format with `rustfmt`
+### Format with `rustfmt` (`rustfmt`) {#rustfmt}
 
 Asterinas uses [rustfmt](https://rust-lang.github.io/rustfmt/)
 with a project-wide `rustfmt.toml`:
@@ -86,7 +86,7 @@ skip_macro_invocations = ["chmod", "mkmod", "ioc"]
 
 Run `cargo fmt` before submitting a pull request.
 
-### Prefer functions over macros when possible
+### Prefer functions over macros when possible (`functions-over-macros`) {#functions-over-macros}
 
 Use macros only for compile-time code generation,
 variadic arguments, conditional compilation,

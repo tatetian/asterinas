@@ -1,6 +1,6 @@
 # Logging
 
-### Use `log` crate macros exclusively
+### Use `log` crate macros exclusively (`log-crate-only`) {#log-crate-only}
 
 The project standardizes on the
 [`log`](https://docs.rs/log) crate's macros:
@@ -9,7 +9,7 @@ Custom output functions, `println!`,
 and hand-rolled serial print macros
 are not acceptable in production code.
 
-### Choose appropriate log levels
+### Choose appropriate log levels (`log-levels`) {#log-levels}
 
 | Level | Use for |
 |-------|---------|

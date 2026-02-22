@@ -1,6 +1,6 @@
 # Modules and Crates
 
-### Default to the narrowest visibility
+### Default to the narrowest visibility (`narrow-visibility`) {#narrow-visibility}
 
 Start private,
 then widen to `pub(super)`, `pub(crate)`, or `pub`
@@ -23,14 +23,14 @@ See also:
 PR [#2951](https://github.com/asterinas/asterinas/pull/2951)
 and [#2605](https://github.com/asterinas/asterinas/pull/2605#discussion_r2720506912).
 
-### Encapsulate fields behind getters
+### Encapsulate fields behind getters (`getter-encapsulation`) {#getter-encapsulation}
 
 Do not make fields public
 when a simple getter method would do.
 The getter provides the right place
 for naming conventions and future evolution.
 
-### Use workspace dependencies
+### Use workspace dependencies (`workspace-deps`) {#workspace-deps}
 
 Always declare shared dependencies
 in the workspace `[workspace.dependencies]` table
@@ -49,7 +49,7 @@ ostd.workspace = true
 bitflags.workspace = true
 ```
 
-### Follow the three-group import convention
+### Follow the three-group import convention (`import-groups`) {#import-groups}
 
 Imports follow a three-group pattern
 enforced by the `rustfmt.toml` settings:

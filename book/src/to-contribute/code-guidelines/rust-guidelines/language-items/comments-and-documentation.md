@@ -13,7 +13,7 @@ The recommended documentation style is specified by two official resources:
 2. The Rust RFC book:
    [API Documentation Conventions](https://rust-lang.github.io/rfcs/1574-more-api-documentation-conventions.html#appendix-a-full-conventions-text).
 
-### Use `///` doc comments with semantic line breaks
+### Use `///` doc comments with semantic line breaks (`semantic-doc-comments`) {#semantic-doc-comments}
 
 Use `///` doc comments
 so that each clause occupies its own line in the source.
@@ -26,7 +26,7 @@ so that each clause occupies its own line in the source.
 /// does not overlap with existing mappings.
 ```
 
-### Follow RFC 505 summary line conventions
+### Follow RFC 505 summary line conventions (`rfc505-summary`) {#rfc505-summary}
 
 The first line of a doc comment is
 third-person singular present indicative
@@ -39,7 +39,7 @@ pub fn map_to_addr(&self) -> Vaddr {
 }
 ```
 
-### Wrap identifiers in backticks
+### Wrap identifiers in backticks (`backtick-identifiers`) {#backtick-identifiers}
 
 Type names, method names,
 and code identifiers in doc comments
@@ -47,12 +47,12 @@ must be wrapped in backticks for rustdoc rendering.
 Make type names into rustdoc hyperlinks
 using square-bracket syntax (`[TypeName]`).
 
-### Do not disclose implementation details in doc comments
+### Do not disclose implementation details in doc comments (`no-impl-in-docs`) {#no-impl-in-docs}
 
 Doc comments describe _what_ and _how to use_,
 not _how it works internally_.
 
-### `TODO`/`FIXME` in `//` comments, not `///` doc comments
+### `TODO`/`FIXME` in `//` comments, not `///` doc comments (`todo-in-regular-comments`) {#todo-in-regular-comments}
 
 Internal notes like `TODO` and `FIXME`
 are not user-facing documentation
@@ -63,14 +63,14 @@ and must use regular `//` comments, not `///` doc comments.
 // See https://lwn.net/Articles/894098/ for more details.
 ```
 
-### Comprehensive doc coverage for all public APIs
+### Comprehensive doc coverage for all public APIs (`doc-all-public`) {#doc-all-public}
 
 All public items —
 especially syscall handlers, public structs/enums,
 and macro-generated methods —
 must have doc comments.
 
-### Add module-level documentation for major components
+### Add module-level documentation for major components (`module-docs`) {#module-docs}
 
 Every module file that serves as
 a significant kernel component
@@ -91,7 +91,7 @@ should begin with a `//!` comment explaining:
 //! defined in the parent module.
 ```
 
-### Delete dead code aggressively
+### Delete dead code aggressively (`delete-dead-code`) {#delete-dead-code}
 
 Unreachable functions, unused imports,
 obsolete branches, and orphaned types
@@ -100,5 +100,5 @@ Every line of code has a maintenance cost.
 The most readable code is code that is not there.
 
 `#[expect(dead_code)]` (per
-[Macros and Attributes](macros-and-attributes.md#when-to-expectdead_code))
+[Macros and Attributes](macros-and-attributes.md#expect-dead-code))
 is the narrow exception, not the norm.

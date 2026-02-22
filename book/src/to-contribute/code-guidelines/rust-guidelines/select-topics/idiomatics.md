@@ -5,7 +5,7 @@ iterators, early returns, the `?` operator,
 builder patterns, and established crate conventions
 over bespoke solutions.
 
-### Use the `?` operator, not chains of `.unwrap()`
+### Use the `?` operator, not chains of `.unwrap()` (`question-mark-operator`) {#question-mark-operator}
 
 The `?` operator should propagate errors idiomatically.
 `.unwrap()` without justification is a code smell.
@@ -21,7 +21,7 @@ let tsc_info = cpuid.get_tsc_info().unwrap();
 See also:
 PR [#2784](https://github.com/asterinas/asterinas/pull/2784).
 
-### Choose the right interior mutability primitive
+### Choose the right interior mutability primitive (`interior-mutability`) {#interior-mutability}
 
 Use `Cell<T>` for `Copy` types
 needing single-threaded mutation through shared references.

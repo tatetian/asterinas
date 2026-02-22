@@ -6,7 +6,7 @@ Names must be accurate, unabbreviated,
 and follow
 [Rust API Guidelines on naming](https://rust-lang.github.io/api-guidelines/naming.html).
 
-### Omit `get_` prefix on simple getters
+### Omit `get_` prefix on simple getters (`no-get-prefix`) {#no-get-prefix}
 
 Simple accessor methods use the bare noun,
 not a `get_` prefix.
@@ -31,7 +31,7 @@ See also:
 PR [#170](https://github.com/asterinas/asterinas/pull/170#discussion_r1154020166)
 and [#424](https://github.com/asterinas/asterinas/pull/424#discussion_r1387565451).
 
-### Use full English words, not abbreviations
+### Use full English words, not abbreviations (`no-abbreviations`) {#no-abbreviations}
 
 Abbreviated or jargon-derived names
 must be replaced with accurate, full English words.
@@ -50,7 +50,7 @@ subdir
 See also:
 PR [#170](https://github.com/asterinas/asterinas/pull/170#discussion_r1154551016).
 
-### Names must accurately reflect behavior
+### Names must accurately reflect behavior (`accurate-names`) {#accurate-names}
 
 If a name can be misread
 to imply the wrong behavior, side effect, or ownership,
@@ -68,7 +68,7 @@ See also:
 PR [#1488](https://github.com/asterinas/asterinas/pull/1488#discussion_r1825441287)
 and [#2964](https://github.com/asterinas/asterinas/pull/2964#discussion_r2789739882).
 
-### Follow Rust CamelCase and acronym capitalization
+### Follow Rust CamelCase and acronym capitalization (`camel-case-acronyms`) {#camel-case-acronyms}
 
 Type names follow Rust's CamelCase convention.
 Acronyms are title-cased per the Rust API Guidelines:
@@ -87,7 +87,7 @@ NVMe
 TCP
 ```
 
-### End closure variables with `_fn`
+### End closure variables with `_fn` (`closure-fn-suffix`) {#closure-fn-suffix}
 
 Variables holding closures or function pointers
 must signal they are callable by ending with `_fn`.
@@ -112,7 +112,7 @@ See also:
 PR [#395](https://github.com/asterinas/asterinas/pull/395#discussion_r1402964415)
 and [#783](https://github.com/asterinas/asterinas/pull/783#discussion_r1593335375).
 
-### Use assertion-style boolean names
+### Use assertion-style boolean names (`rust-bool-names`) {#rust-bool-names}
 
 Boolean variables, fields, and functions
 should read as assertions of fact.
@@ -133,5 +133,5 @@ let is_not_empty = !buf.is_empty();
 ```
 
 See also
-[General Guidelines](../general-guidelines/README.md#use-assertion-style-boolean-names);
+[General Guidelines](../general-guidelines/README.md#bool-names);
 PR [#1488](https://github.com/asterinas/asterinas/pull/1488#discussion_r1841827039).

@@ -1,6 +1,6 @@
 # Variables, Expressions, and Statements
 
-### Use checked or saturating arithmetic
+### Use checked or saturating arithmetic (`checked-arithmetic`) {#checked-arithmetic}
 
 Use checked or saturating arithmetic
 for operations that could overflow.
@@ -12,7 +12,7 @@ debug_assert!(self.align.is_multiple_of(PAGE_SIZE));
 debug_assert!(self.align.is_power_of_two());
 ```
 
-### Prefer immutable bindings
+### Prefer immutable bindings (`prefer-immutable`) {#prefer-immutable}
 
 Declare variables with `let` rather than `let mut`
 whenever possible.
@@ -21,7 +21,7 @@ are far easier to reason about.
 Use mutable bindings only when mutation
 is genuinely required.
 
-### Introduce explaining variables
+### Introduce explaining variables (`explain-variables`) {#explain-variables}
 
 Break down complex expressions
 by assigning intermediate results to well-named variables.

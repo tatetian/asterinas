@@ -1,6 +1,6 @@
 # Functions and Methods
 
-### Minimize nesting; use early returns and `let-else`
+### Minimize nesting; use early returns and `let-else` (`early-returns`) {#early-returns}
 
 Minimize nesting depth.
 Code nested more than three levels deep
@@ -33,7 +33,7 @@ See also:
 PR [#2877](https://github.com/asterinas/asterinas/pull/2877#discussion_r2685861741)
 and [#2445](https://github.com/asterinas/asterinas/pull/2445#discussion_r2769320458).
 
-### Extract coherent logic into named helpers
+### Extract coherent logic into named helpers (`extract-helpers`) {#extract-helpers}
 
 Long or complex sequences forming a coherent sub-task
 should be extracted into named helper functions
@@ -62,7 +62,7 @@ See also:
 PR [#2929](https://github.com/asterinas/asterinas/pull/2929#discussion_r2757234577)
 and [#2265](https://github.com/asterinas/asterinas/pull/2265#discussion_r2266214191).
 
-### Keep functions small and focused
+### Keep functions small and focused (`small-functions`) {#small-functions}
 
 Each function should do one thing,
 do it well, and do it only.
@@ -78,7 +78,7 @@ byte-level manipulation belongs in a helper.
 See also:
 PR [#639](https://github.com/asterinas/asterinas/pull/639#discussion_r1524629393).
 
-### Avoid flag arguments
+### Avoid flag arguments (`no-flag-args`) {#no-flag-args}
 
 A boolean parameter that selects between
 two behaviors signals the function does two things.
