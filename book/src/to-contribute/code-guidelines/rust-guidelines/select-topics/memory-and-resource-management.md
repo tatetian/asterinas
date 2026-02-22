@@ -25,6 +25,9 @@ fn enable_local_irqs() { ... }
 Prefer lexical lifetimes
 so the Rust compiler inserts `drop` automatically,
 rather than calling `drop()` manually.
+When the default drop order is incorrect,
+use explicit `drop()` calls
+(see [Concurrency](concurrency-and-races.md#drop-ordering)).
 
 See also:
 PR [#164](https://github.com/asterinas/asterinas/pull/164)

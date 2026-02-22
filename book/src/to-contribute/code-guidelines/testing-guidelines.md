@@ -4,6 +4,8 @@ This page covers language-agnostic testing conventions.
 For Rust-specific testing conventions, see
 [Rust Guidelines — Unit Testing](rust-guidelines/select-topics/unit-testing.md).
 
+## Naming
+
 ### Name tests after observable behavior (`behavior-names`) {#behavior-names}
 
 Name tests after the behavior or specification concept
@@ -16,6 +18,8 @@ what went wrong.
 See also:
 PR [#2959](https://github.com/asterinas/asterinas/pull/2959)
 and [#2962](https://github.com/asterinas/asterinas/pull/2962).
+
+## Structure
 
 ### Use assertion macros, not manual inspection (`use-assertions`) {#use-assertions}
 
@@ -47,6 +51,8 @@ unlink("/tmp/test_file");
 See also:
 PR [#2926](https://github.com/asterinas/asterinas/pull/2926)
 and [#2969](https://github.com/asterinas/asterinas/pull/2969).
+
+## Coverage
 
 ### Require regression tests for every bug fix (`require-regression-tests`) {#require-regression-tests}
 

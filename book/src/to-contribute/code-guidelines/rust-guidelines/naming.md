@@ -132,6 +132,6 @@ fn check_permission(&self, perm: Permission) -> bool { ... }
 let is_not_empty = !buf.is_empty();
 ```
 
-See also
+See also:
 [General Guidelines](../general-guidelines/README.md#bool-names);
 PR [#1488](https://github.com/asterinas/asterinas/pull/1488#discussion_r1841827039).

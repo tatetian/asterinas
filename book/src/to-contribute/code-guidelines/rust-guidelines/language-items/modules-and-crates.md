@@ -30,6 +30,24 @@ when a simple getter method would do.
 The getter provides the right place
 for naming conventions and future evolution.
 
+```rust
+// Good — field is private, accessed via getter
+pub struct Vma {
+    perms: VmPerms,
+}
+
+impl Vma {
+    pub fn perms(&self) -> VmPerms {
+        self.perms
+    }
+}
+
+// Bad — public field exposes representation
+pub struct Vma {
+    pub perms: VmPerms,
+}
+```
+
 ### Use workspace dependencies (`workspace-deps`) {#workspace-deps}
 
 Always declare shared dependencies
@@ -41,7 +59,7 @@ in member crates.
 # In the workspace root Cargo.toml
 [workspace.dependencies]
 ostd = { version = "0.17.0", path = "ostd" }
-bitflags.workspace = true
+bitflags = "2.6"
 
 # In a member crate's Cargo.toml
 [dependencies]

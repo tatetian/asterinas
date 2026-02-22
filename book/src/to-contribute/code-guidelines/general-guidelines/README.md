@@ -36,7 +36,7 @@ Kernel code deals with bytes, pages, frames,
 nanoseconds, ticks, and sectors —
 ambiguous units are a source of real bugs.
 
-```
+```text
 // Good — unit is unambiguous
 timeout_ns
 offset_bytes
@@ -50,7 +50,7 @@ size
 delay
 ```
 
-Where Rust's type system can enforce units (newtypes),
+Where the language's type system can enforce units (e.g., newtypes),
 prefer that.
 Where it cannot, the name must carry the information.
 
@@ -90,7 +90,7 @@ and any alternatives considered.
 Design-decision comments ("director's commentary")
 are the most valuable kind of comment.
 
-```
+```rust
 // We use a radix tree rather than a HashMap
 // because lookups must be O(log n) worst-case
 // for the page fault handler.
@@ -111,7 +111,7 @@ cite the source:
 the relevant POSIX section, Linux man page,
 hardware reference manual, or academic paper.
 
-```
+```rust
 // Per POSIX.1-2017 Section 2.9.7,
 // write() on a pipe is atomic when nbyte <= PIPE_BUF.
 
@@ -188,9 +188,9 @@ couples the caller to four levels of internal structure.
 Provide a direct method on the immediate object
 or pass only the specific object needed as a parameter.
 
-See also
+See also:
 [Modules and Crates](../rust-guidelines/language-items/modules-and-crates.md#narrow-visibility)
-for Rust-specific visibility rules.
+for Rust-specific visibility rules;
 PR [#2951](https://github.com/asterinas/asterinas/pull/2951#discussion_r2766432889).
 
 ### Use types to encode invariants (`type-invariants`) {#type-invariants}
@@ -212,9 +212,9 @@ rather than adding defensive checks
 that paper over the symptom.
 Unnecessary guards hide real bugs.
 
-See also
-[Error Handling](../rust-guidelines/select-topics/error-handling.md#fix-root-causes-not-symptoms)
-for the Rust-specific formulation.
+See also:
+[Error Handling](../rust-guidelines/select-topics/error-handling.md#rust-fix-root-causes)
+for the Rust-specific formulation;
 PR [#2741](https://github.com/asterinas/asterinas/pull/2741).
 
 ### Validate at boundaries, trust internally (`validate-at-boundaries`) {#validate-at-boundaries}

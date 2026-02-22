@@ -75,6 +75,25 @@ Do not mix levels of abstraction:
 a syscall handler should read like a specification;
 byte-level manipulation belongs in a helper.
 
+```rust
+// Good — each function operates at one level of abstraction
+pub fn sys_connect(sockfd: i32, addr: Vaddr, len: u32) -> Result<()> {
+    let socket = get_socket(sockfd)?;
+    let remote_addr = parse_socket_addr(addr, len)?;
+    socket.connect(remote_addr)
+}
+
+// Bad — mixes high-level logic with low-level details
+pub fn sys_connect(sockfd: i32, addr: Vaddr, len: u32) -> Result<()> {
+    let fd_table = current_process().fd_table().lock();
+    let file = fd_table.get(sockfd).ok_or(Errno::EBADF)?;
+    let socket = file.downcast_ref::<Socket>().ok_or(Errno::ENOTSOCK)?;
+    let bytes = read_bytes_from_user(addr, len as usize)?;
+    let family = u16::from_ne_bytes([bytes[0], bytes[1]]);
+    // ... 30 more lines of byte parsing ...
+}
+```
+
 See also:
 PR [#639](https://github.com/asterinas/asterinas/pull/639#discussion_r1524629393).
 

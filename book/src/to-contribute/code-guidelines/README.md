@@ -3,7 +3,7 @@
 This section describes the coding and collaboration conventions
 for the Asterinas project.
 These guidelines aim to promote high-quality code
-that are clean, consistent, maintainable, correct, and efficient.
+that is clean, consistent, maintainable, correct, and efficient.
 
 The coding guidelines are organized into the following pages:
 
@@ -86,10 +86,10 @@ they should be fixed according to the guidelines.
 | Rust | Use workspace dependencies | [`workspace-deps`](rust-guidelines/language-items/modules-and-crates.md#workspace-deps) |
 | Rust | Follow the three-group import convention | [`import-groups`](rust-guidelines/language-items/modules-and-crates.md#import-groups) |
 | Rust | Suppress lints at the narrowest scope | [`narrow-lint-suppression`](rust-guidelines/language-items/macros-and-attributes.md#narrow-lint-suppression) |
-| Rust | [When to `#[expect(dead_code)]`](rust-guidelines/language-items/macros-and-attributes.md#expect-dead-code) | [`expect-dead-code`](rust-guidelines/language-items/macros-and-attributes.md#expect-dead-code) |
+| Rust | When to `#[expect(dead_code)]` | [`expect-dead-code`](rust-guidelines/language-items/macros-and-attributes.md#expect-dead-code) |
 | Rust | Format with `rustfmt` | [`rustfmt`](rust-guidelines/language-items/macros-and-attributes.md#rustfmt) |
 | Rust | Prefer functions over macros when possible | [`functions-over-macros`](rust-guidelines/language-items/macros-and-attributes.md#functions-over-macros) |
-| Rust | Use `cfg` attributes for architecture-specific modules | [`cfg-arch-modules`](rust-guidelines/language-items/conditional-compilation.md#cfg-arch-modules) |
+| Rust | Use `cfg_attr` to select architecture-specific modules | [`cfg-arch-modules`](rust-guidelines/language-items/conditional-compilation.md#cfg-arch-modules) |
 | Rust | Use the `?` operator, not chains of `.unwrap()` | [`question-mark-operator`](rust-guidelines/select-topics/idiomatics.md#question-mark-operator) |
 | Rust | Choose the right interior mutability primitive | [`interior-mutability`](rust-guidelines/select-topics/idiomatics.md#interior-mutability) |
 | Rust | Establish and enforce a consistent lock order | [`lock-ordering`](rust-guidelines/select-topics/concurrency-and-races.md#lock-ordering) |

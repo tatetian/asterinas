@@ -14,7 +14,7 @@ and the conventions described in the pages below.
 - **[Naming](naming.md)** —
   Getter naming, abbreviations, acronym capitalization,
   closure variable suffixes, and boolean naming.
-- **Language Items**
+- **[Language Items](language-items/README.md)**
   - **[Variables, Expressions, and Statements](language-items/variables-expressions-and-statements.md)** —
     Checked arithmetic, immutability,
     and explaining variables.
@@ -39,7 +39,7 @@ and the conventions described in the pages below.
     `rustfmt` configuration, and functions vs. macros.
   - **[Conditional Compilation](language-items/conditional-compilation.md)** —
     Architecture selection with `cfg` attributes.
-- **Select Topics**
+- **[Select Topics](select-topics/README.md)**
   - **[Idiomatics](select-topics/idiomatics.md)** —
     The `?` operator and interior mutability primitives.
   - **[Concurrency and Races](select-topics/concurrency-and-races.md)** —

@@ -39,6 +39,8 @@ impl AccessMode {
 ```
 
 See also:
+[General Guidelines](../../general-guidelines/README.md#type-invariants)
+for the language-agnostic formulation;
 PR [#2265](https://github.com/asterinas/asterinas/pull/2265#discussion_r2266214191)
 and [#2514](https://github.com/asterinas/asterinas/pull/2514).
 

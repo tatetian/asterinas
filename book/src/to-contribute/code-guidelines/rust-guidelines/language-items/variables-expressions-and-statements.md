@@ -4,12 +4,19 @@
 
 Use checked or saturating arithmetic
 for operations that could overflow.
-The `debug_assert!` macro is useful
-for catching overflow conditions during development:
+Prefer explicit overflow handling
+over silent wrapping:
 
 ```rust
-debug_assert!(self.align.is_multiple_of(PAGE_SIZE));
-debug_assert!(self.align.is_power_of_two());
+// Good — overflow is handled explicitly
+let total = base.checked_add(offset)
+    .ok_or(Error::new(Errno::EOVERFLOW))?;
+
+// Good — clamps instead of wrapping
+let remaining = budget.saturating_sub(cost);
+
+// Bad — may silently wrap in release builds
+let total = base + offset;
 ```
 
 ### Prefer immutable bindings (`prefer-immutable`) {#prefer-immutable}
@@ -20,6 +27,14 @@ Variables that never change after initialization
 are far easier to reason about.
 Use mutable bindings only when mutation
 is genuinely required.
+
+```rust
+// Good — computed once, never modified
+let offset = base_addr + page_index * PAGE_SIZE;
+
+// Bad — mutable but never mutated after initialization
+let mut offset = base_addr + page_index * PAGE_SIZE;
+```
 
 ### Introduce explaining variables (`explain-variables`) {#explain-variables}
 

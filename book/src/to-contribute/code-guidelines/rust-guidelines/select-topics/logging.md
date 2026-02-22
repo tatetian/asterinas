@@ -9,6 +9,14 @@ Custom output functions, `println!`,
 and hand-rolled serial print macros
 are not acceptable in production code.
 
+```rust
+// Good
+log::info!("VirtIO block device initialized: {} sectors", num_sectors);
+
+// Bad
+println!("VirtIO block device initialized: {} sectors", num_sectors);
+```
+
 ### Choose appropriate log levels (`log-levels`) {#log-levels}
 
 | Level | Use for |

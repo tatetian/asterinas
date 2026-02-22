@@ -1,5 +1,10 @@
 # Assembly Guidelines
 
+These guidelines apply to assembly code
+in inline `global_asm!` blocks and standalone `.S` files.
+For the underlying philosophy, see
+[How These Guidelines Are Written](how-these-guidelines-are-written.md).
+
 ## Sections
 
 ### Use the correct section directive (`section-directives`) {#section-directives}
@@ -16,7 +21,7 @@ to visually separate it from the code that follows.
 .section ".bsp_boot.stack", "aw", @nobits
 
 boot_stack_bottom:
-    .align 4096
+    .balign 4096
     .skip 0x40000  # 256 KiB
 boot_stack_top:
 ```
@@ -43,13 +48,13 @@ foo:
 
 ### Place attributes directly before the function (`function-attributes`) {#function-attributes}
 
-Function attributes (`.global`, `.align`)
+Function attributes (`.global`, `.balign`, `.type`)
 should be placed directly before the function label
 and should not be indented.
 Prefer `.global` over `.globl` for clarity.
 
 ```asm
-.align 4
+.balign 4
 .global foo
 foo:
    mov rax, 1
@@ -88,11 +93,11 @@ Add custom prefixes to labels to avoid name clashes
 (e.g., `bsp_` for BSP boot code, `ap_` for AP boot code).
 
 ```asm
-// Good — prefixed to avoid clashes
+# Good — prefixed to avoid clashes
 bsp_boot_stack_top:
 ap_boot_stack_top:
 
-// Bad — generic names risk duplication
+# Bad — generic names risk duplication
 boot_stack_top:
 ```
 
@@ -108,10 +113,10 @@ on others a power of two.
 Use `.balign` for unambiguous byte-count alignment.
 
 ```asm
-// Good — unambiguous
+# Good — unambiguous
 .balign 4096
 
-// Bad — architecture-dependent meaning
+# Bad — architecture-dependent meaning
 .align 12
 ```
 

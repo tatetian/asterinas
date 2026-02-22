@@ -46,12 +46,12 @@ should be avoided.
 // Bad — unnecessary Arc::clone
 fn process(&self, stream: Arc<DmaStream>) {
     let s = stream.clone();
-    s.sync()?;
+    s.sync();
 }
 
 // Good — borrow when ownership is not needed
 fn process(&self, stream: &DmaStream) {
-    stream.sync()?;
+    stream.sync();
 }
 ```
 

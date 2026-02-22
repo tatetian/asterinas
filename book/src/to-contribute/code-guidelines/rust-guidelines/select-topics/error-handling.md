@@ -8,13 +8,17 @@ Using `.unwrap()` in kernel code
 where failure is legitimate is rejected.
 
 ```rust
-pub(super) fn unlink(&self, name: &str) -> Result<()> {
-    if is_dot_or_dotdot(name) {
-        return_errno_with_message!(Errno::EINVAL, "unlink on . or ..");
-    }
-    // ... main logic at the top level
-}
+// Good — propagate with ?
+let tsc_info = cpuid.get_tsc_info()?;
+let frequency = tsc_info.nominal_frequency()?;
+
+// Bad — unwrap hides the failure path
+let tsc_info = cpuid.get_tsc_info().unwrap();
 ```
+
+See also:
+[Idiomatics](../select-topics/idiomatics.md#question-mark-operator)
+for additional context on the `?` operator.
 
 ### Error messages must be informative and consistent (`informative-errors`) {#informative-errors}
 

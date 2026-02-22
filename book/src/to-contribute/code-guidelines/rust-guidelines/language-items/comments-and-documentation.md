@@ -4,7 +4,7 @@ API documentation describes the meanings and usage of APIs
 and will be rendered into web pages by rustdoc.
 It is necessary to add documentation to all public APIs,
 including crates, modules, structs, traits, functions, macros, and more.
-The use of the `#[warn(missing_docs)]` lint enforces this rule.
+The use of the `#![warn(missing_docs)]` lint encourages compliance with this rule.
 
 Asterinas adheres to the API style guidelines of the Rust community.
 The recommended documentation style is specified by two official resources:
@@ -47,10 +47,28 @@ must be wrapped in backticks for rustdoc rendering.
 Make type names into rustdoc hyperlinks
 using square-bracket syntax (`[TypeName]`).
 
+```rust
+/// Acquires the [`SpinLock`] and returns a guard
+/// that releases the lock on [`Drop`].
+///
+/// Callers must not call `acquire` while holding
+/// a [`RwMutex`] to avoid deadlock.
+pub fn acquire(&self) -> SpinLockGuard<'_, T> { ... }
+```
+
 ### Do not disclose implementation details in doc comments (`no-impl-in-docs`) {#no-impl-in-docs}
 
 Doc comments describe _what_ and _how to use_,
 not _how it works internally_.
+
+```rust
+// Good — describes behavior, not mechanism
+/// Returns the number of active connections.
+
+// Bad — leaks implementation details
+/// Returns the length of the internal `HashMap`
+/// that tracks connections by socket address.
+```
 
 ### `TODO`/`FIXME` in `//` comments, not `///` doc comments (`todo-in-regular-comments`) {#todo-in-regular-comments}
 
@@ -90,6 +108,8 @@ should begin with a `//!` comment explaining:
 //! VMAs are managed by the [`Vmar`] tree
 //! defined in the parent module.
 ```
+
+## Code Hygiene
 
 ### Delete dead code aggressively (`delete-dead-code`) {#delete-dead-code}
 

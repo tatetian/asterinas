@@ -10,7 +10,7 @@ Three books have influenced the guidelines the most:
 
 By the time the initial version of these guidelines was formulated,
 Asterinas had seen thousands of code reviews.
-We collected the historic review comments
+We collected the historical review comments
 as a [dataset](https://github.com/asterinas/pr-review-analysis)
 and used it as both inspiration and justification
 for the resulting guidelines.
@@ -169,11 +169,9 @@ debug_assert!(addr % PAGE_SIZE == 0 && addr < max_addr);
 ```
 
 See also:
-_The Art of Readable Code_, Chapter 8 "Breaking Down Giant Expressions",
-_Clean Code_, Chapter 2 "Meaningful Names";
-PR [#643](https://github.com/asterinas/asterinas/pull/643#discussion_r1497243812)
-and [#1585](https://github.com/asterinas/asterinas/pull/1585#discussion_r1835925421);
-[`is_readable` and `is_writable` in `EventFile::check_io_events`](https://github.com/asterinas/asterinas/blob/97bc17fa58ff2d3be555c48be8973e4d1c924b94/kernel/src/syscall/eventfd.rs#L109-L119).
+_The Art of Readable Code_, Chapter 8 "Breaking Down Giant Expressions";
+PR [#2083](https://github.com/asterinas/asterinas/pull/2083#discussion_r2512772091)
+and [#643](https://github.com/asterinas/asterinas/pull/643#discussion_r1497243812).
 ````
 
 This example demonstrates:
