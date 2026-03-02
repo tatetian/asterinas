@@ -1,0 +1,112 @@
+name: Review PR with Codex
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull request number to review"
+        required: true
+        type: number
+
+concurrency:
+  group: codex-review-pr-${{ github.event.pull_request.number || inputs.pr_number }}
+  cancel-in-progress: true
+
+jobs:
+  trigger_codex:
+    # Skip PRs from forks — repository secrets are not available.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      final_message: ${{ steps.run_codex.outputs['final-message'] }}
+      pr_number: ${{ steps.pr_info.outputs.pr_number }}
+    steps:
+      - name: Get PR info
+        id: pr_info
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            PR_NUMBER="${{ inputs.pr_number }}"
+          else
+            PR_NUMBER="${{ github.event.pull_request.number }}"
+          fi
+          echo "pr_number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
+
+          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${PR_NUMBER})
+          echo "head_sha=$(echo "$PR_JSON" | jq -r .head.sha)" >> "$GITHUB_OUTPUT"
+          echo "base_sha=$(echo "$PR_JSON" | jq -r .base.sha)" >> "$GITHUB_OUTPUT"
+          echo "title=$(echo "$PR_JSON" | jq -r .title)" >> "$GITHUB_OUTPUT"
+
+          # Use heredoc delimiter for multiline body
+          echo "body<<BODY_EOF" >> "$GITHUB_OUTPUT"
+          echo "$PR_JSON" | jq -r '.body // ""' >> "$GITHUB_OUTPUT"
+          echo "BODY_EOF" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ steps.pr_info.outputs.head_sha }}
+          fetch-depth: 0
+
+      - name: Run Codex
+        id: run_codex
+        uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          prompt: |
+            This is a PR review task triggered by CI.
+
+            # Guidance
+
+            Review ONLY the changes introduced by the PR, so consider:
+            ```
+               git log --oneline ${{ steps.pr_info.outputs.base_sha }}...${{ steps.pr_info.outputs.head_sha }}
+            ```
+
+            Focus on correctness, security, tests, and maintainability.
+            Point out potential bugs and suggest concrete improvements.
+            Be concise and specific in your feedback.
+
+            When reviewing pull requests and referencing files, always use GitHub
+            permalink URLs with the commit SHA and line range, for example:
+            `https://github.com/tatetian/asterinas/blob/<commit_sha>/path/to/file.rs#L10-L20`.
+            Never use absolute filesystem paths (e.g., `/home/runner/work/...`).
+
+            # PR Info
+
+            This is PR #${{ steps.pr_info.outputs.pr_number }} for ${{ github.repository }}.
+
+            Pull request title and body:
+            ----
+            ${{ steps.pr_info.outputs.title }}
+            ${{ steps.pr_info.outputs.body }}
+
+  post_feedback:
+    runs-on: ubuntu-latest
+    needs: trigger_codex
+    if: needs.trigger_codex.outputs.final_message != ''
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Post Codex feedback as PR comment
+        uses: actions/github-script@v7
+        env:
+          CODEX_FINAL_MESSAGE: ${{ needs.trigger_codex.outputs.final_message }}
+          PR_NUMBER: ${{ needs.trigger_codex.outputs.pr_number }}
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: parseInt(process.env.PR_NUMBER),
+              body: `Here are review comments from Codex.\n\n${process.env.CODEX_FINAL_MESSAGE}`,
+            });
