@@ -3,10 +3,11 @@
 ## Overview
 
 A skill called `pr-review` that enables maintainers to generate,
-edit, and submit GitHub PR reviews entirely from the CLI. The skill has two
-subcommands: `new` (generate) and `submit` (post to GitHub).
+edit, and submit GitHub PR reviews entirely from the CLI. The skill has
+three subcommands: `new` (generate), `submit` (post to GitHub), and
+`redo` (follow-up review after PR updates).
 
-The core workflow is: **generate -> edit -> submit**.
+The core workflow supports iterative review-revise cycles.
 
 ## Motivation
 
@@ -15,42 +16,77 @@ The core workflow is: **generate -> edit -> submit**.
 - Maintainers need to edit AI-generated reviews before posting.
 - Reviews should be submitted as a single batch (pending review), not as
   individual comments, so the maintainer can finalize on GitHub.
+- PRs often go through multiple review-revise iterations. The `redo`
+  subcommand supports this by reading the previous review, checking which
+  comments were addressed, and focusing on remaining and new issues.
 
 ## Workflow
 
 ```
-/pr-review new <PR>              User edits <N>.md              /pr-review submit <PR>
-       |                         (manually or via Claude)                |
-       v                                                                v
- 1. Fetch PR metadata                                          1. Parse <N>.md
- 2. Create worktree with PR source                             2. Validate format
- 3. Fetch PR diff                                              3. POST to GitHub API
- 4. Generate <N>.md                                               (pending review)
-       |                                                                |
-       v                                                                v
- pr_reviews/<N>.md                                             Pending review created
-                                                               (user finalizes on GitHub)
+Step 1: /pr-review new <PR>      Step 2: Edit <N>.md      Step 3: /pr-review submit <PR>
+       |                                                          |
+       v                                                          v
+ 1. Fetch PR metadata                                     1. Parse <N>.md
+ 2. Create worktree with PR source                        2. Validate format
+ 3. Fetch PR diff                                         3. POST to GitHub API
+ 4. Generate review file                                     (pending review)
+       |                                                          |
+       v                                                          v
+ pr_reviews/<N>/review-<ts>.md                            Pending review created
+ pr_reviews/<N>.md (symlink)                              (user finalizes on GitHub)
+
+                        Step 4: PR author updates the PR
+
+Step 5: /pr-review redo <PR>     Step 6: Edit <N>.md      Step 7: /pr-review submit <PR>
+       |                                                          |
+       v                                                          v
+ 1. Read previous review                                  (same as Step 3)
+ 2. Re-fetch PR source
+ 3. Fetch new diff
+ 4. Generate follow-up review
+    - Check which previous
+      comments were addressed
+    - Find new issues
+       |
+       v
+ pr_reviews/<N>/review-<ts2>.md
+ pr_reviews/<N>.md (updated symlink)
+
+ If satisfied → approve on GitHub.
+ If not → edit <N>.md and go to Step 7, or wait for another revision and redo.
 ```
 
 ## Directory Structure
 
 ```
 pr_reviews/
-  .gitignore
-  2887/               # The source code of the target PR (git worktree)
-  2887.md             # The editable review file
+  .gitignore              # Contains "*" to ignore everything
+  <N>/                    # Git worktree + review files for PR #N
+    review-<ts1>.md       # First round review
+    review-<ts2>.md       # Second round review (from redo)
+    ...                   # (source files from the worktree)
+  <N>.md                  # Symlink → <N>/review-<tsM>.md (latest)
 ```
 
 Each PR review task has an associated worktree directory,
-`pr_reviews/<pr_number>`, which contains the source code of the target PR.
+`pr_reviews/<N>`, which contains the source code of the target PR.
 Having the whole source tree cloned gives code review more context.
 
-The review file itself is placed at `pr_reviews/<pr_number>.md` (next to
-the worktree directory, not inside it) so it is easy to find and open.
+Review files are stored inside the worktree directory with timestamped
+names (`review-YYYYMMDD-HHMMSS.md`). Since `pr_reviews/.gitignore`
+contains `*`, the review files are ignored by git even though they
+sit inside the worktree.
 
-The `pr_reviews` directory has a `.gitignore` that instructs Git to ignore
-all files under it. This way, adding directories like `2887` would not
-affect the working Git project.
+A convenience symlink `pr_reviews/<N>.md` always points to the latest
+review file. The `submit` subcommand reads from this symlink.
+
+**Note on worktree recreation:** When `redo` removes and recreates the
+worktree to pick up new code, the review files inside the worktree
+directory are deleted. This is acceptable because:
+1. The previous review has already been read before the worktree is
+   recreated.
+2. Previously submitted reviews are permanently recorded on GitHub.
+3. The review files are working artifacts, not archival records.
 
 ## The Review File Format
 
@@ -321,7 +357,13 @@ Accepts:
 
 7. **Generate the review file.**
    Claude analyzes the diff and the full source tree in `pr_reviews/<N>/`,
-   then writes the structured review file to `$REPO_ROOT/pr_reviews/<N>.md`.
+   then writes the structured review file to
+   `$REPO_ROOT/pr_reviews/<N>/review-<TIMESTAMP>.md`.
+
+   Create (or update) a convenience symlink:
+   ```bash
+   ln -sf "<N>/review-<TIMESTAMP>.md" "$REPO_ROOT/pr_reviews/<N>.md"
+   ```
 
    The review should follow the project's review guidelines (if any exist
    in CLAUDE.md or AGENTS.md). Comments should be:
@@ -341,14 +383,16 @@ it:
 git worktree remove "$REPO_ROOT/pr_reviews/<N>" --force
 git worktree add "$REPO_ROOT/pr_reviews/<N>" refs/pr/<N>
 ```
-The old `pr_reviews/<N>.md` is overwritten. If the user wants to preserve
-it, they should copy the file before re-running.
+Previous review files inside the worktree are lost, but previously submitted
+reviews are recorded on GitHub. A new review file is generated with a fresh
+timestamp and the symlink is updated.
 
 ### Cleanup
 
 When a review is no longer needed, the worktree can be removed:
 ```bash
 git worktree remove pr_reviews/<N>
+rm -f pr_reviews/<N>.md
 ```
 This is not done automatically. The user decides when to clean up.
 
@@ -368,7 +412,8 @@ This is not done automatically. The user decides when to clean up.
    ```
 
 2. **Locate and read** `$REPO_ROOT/pr_reviews/<N>.md`.
-   If the file does not exist, report an error.
+   This is a symlink to the latest review file. If it does not exist,
+   report an error.
 
 3. **Parse** the file according to the format specification above.
    Validate:
@@ -384,7 +429,7 @@ This is not done automatically. The user decides when to clean up.
    - If they match, proceed.
    - If they differ, **refuse to submit**. Print a message explaining that
      the PR has been updated since the review was generated, and instruct
-     the user to run `/pr-review new <N>` to regenerate.
+     the user to run `/pr-review redo <N>` to generate a follow-up review.
 
    Rationale: posting comments on outdated line numbers is worse than
    re-reviewing. Auto-remapping line numbers across commits is fragile
@@ -455,8 +500,99 @@ This is not done automatically. The user decides when to clean up.
 | Review file not found               | Print error, suggest running `new` first    |
 | Frontmatter missing required fields | Print error, list missing fields            |
 | Comment line not found in diff      | Warn, skip that comment, continue           |
-| `head_sha` doesn't match current PR | Refuse to submit, instruct user to re-run `new` |
+| `head_sha` doesn't match current PR | Refuse to submit, instruct user to run `redo` |
 | GitHub API error                     | Print error body, do not retry              |
+
+## Subcommand: `/pr-review redo`
+
+### Input
+
+```
+/pr-review redo <pr_number_or_url>
+```
+
+### Purpose
+
+After a PR author pushes updates in response to review feedback, the
+reviewer runs `redo` to generate a follow-up review. Unlike `new`, which
+starts from scratch, `redo` reads the previous review and uses it as
+context to:
+
+1. Verify whether each previous comment has been addressed.
+2. Identify new issues introduced by the latest changes.
+3. Carry forward unresolved comments with updated context.
+
+### Steps
+
+1. **Resolve PR identity.**
+   Same as `new` step 1.
+
+2. **Fetch PR metadata.**
+   Same as `new` step 2.
+
+3. **Resolve the repo root.**
+   Same as `new` step 3.
+
+4. **Read the previous review.**
+   Read `$REPO_ROOT/pr_reviews/<N>.md` (the symlink to the latest review).
+   Parse its contents to extract:
+   - The previous `head_sha` (to know what code was reviewed before)
+   - All comment sections (file, line, body)
+
+   If no previous review exists, fall back to `new` behavior.
+
+5. **Update the git worktree.**
+   Re-fetch the PR ref and recreate the worktree:
+   ```bash
+   git fetch <remote> pull/<N>/head:refs/pr/<N>
+   git worktree remove "$REPO_ROOT/pr_reviews/<N>" --force
+   git worktree add "$REPO_ROOT/pr_reviews/<N>" refs/pr/<N>
+   ```
+   The previous review files inside the worktree directory are lost,
+   but the previous review contents were already read in step 4.
+
+6. **Fetch the new PR diff.**
+   ```bash
+   gh pr diff <N>
+   ```
+
+7. **Generate the follow-up review.**
+   Analyze the new diff and source tree, using the previous review as
+   context:
+
+   - **For each previous comment:** Check whether the issue was addressed
+     in the new code. If addressed, omit it. If not addressed (or only
+     partially), include it in the new review with a note about what
+     remains.
+   - **For new code:** Review for any newly introduced issues.
+   - **Summary:** State how many previous comments were addressed, how
+     many remain unresolved, and how many new issues were found.
+
+   Write the review to
+   `$REPO_ROOT/pr_reviews/<N>/review-<TIMESTAMP>.md` and update the
+   symlink:
+   ```bash
+   ln -sf "<N>/review-<TIMESTAMP>.md" "$REPO_ROOT/pr_reviews/<N>.md"
+   ```
+
+8. **Report to user.**
+   Print:
+   - Path to the new review file
+   - Previous comments addressed vs. still unresolved
+   - New issues found
+   - Total comment count
+
+   If all previous comments are addressed and no new issues are found,
+   suggest approving the PR on GitHub.
+
+### Difference from `new`
+
+| Aspect              | `new`                          | `redo`                             |
+|---------------------|--------------------------------|------------------------------------|
+| Prior context       | None                           | Reads previous review              |
+| Focus               | Full review from scratch       | Delta: addressed + new issues      |
+| When to use         | First review of a PR           | After PR author pushes updates     |
+| Fallback            | N/A                            | Falls back to `new` if no prior review |
 
 ## Skill Registration
 
@@ -500,8 +636,8 @@ versa).
 
 The `SKILL.md` body should be written so that it works regardless of how
 arguments are injected. The instructions should say "the user provides
-a subcommand (`new` or `submit`) and a PR number or URL" rather than
-relying solely on `$0`/`$1` substitution. For Claude Code, we can
+a subcommand (`new`, `submit`, or `redo`) and a PR number or URL" rather
+than relying solely on `$0`/`$1` substitution. For Claude Code, we can
 additionally use `$0`/`$1` for convenience.
 
 ### Directory Layout
@@ -539,7 +675,7 @@ description: >
 # Standard fields
 compatibility: Requires gh (GitHub CLI) and git
 # Claude Code extensions (ignored by other tools)
-argument-hint: <new|submit> <pr_number_or_url>
+argument-hint: <new|submit|redo> <pr_number_or_url>
 disable-model-invocation: true
 allowed-tools: Bash(gh *), Bash(git *), Read, Write, Glob, Grep, Agent
 ---
@@ -553,7 +689,7 @@ Key settings:
   this skill via `/pr-review`. The agent should never auto-invoke a review.
 - **`allowed-tools`** (Claude Code): Pre-approves the tools needed so the
   user is not prompted repeatedly during review generation or submission.
-- **`argument-hint`** (Claude Code): Shows `<new|submit> <pr_number_or_url>`
+- **`argument-hint`** (Claude Code): Shows `<new|submit|redo> <pr_number_or_url>`
   in the autocomplete menu.
 
 ### Argument Handling
@@ -564,7 +700,7 @@ In the `SKILL.md` body, instructions are written tool-agnostically:
 
 ```
 The user provides:
-- A subcommand: `new` or `submit`
+- A subcommand: `new`, `submit`, or `redo`
 - A PR number (e.g., 2887) or GitHub URL
 ```
 
@@ -580,6 +716,7 @@ Examples of user invocation:
 /pr-review new 2887
 /pr-review new https://github.com/asterinas/asterinas/pull/2887
 /pr-review submit 2887
+/pr-review redo 2887
 ```
 
 ### Supporting Files
