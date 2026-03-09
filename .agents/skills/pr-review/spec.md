@@ -337,7 +337,7 @@ Accepts:
    (compare remote URLs against the `owner/repo` from step 1). Typically
    this is `upstream` for upstream PRs or `origin` for fork PRs.
    ```bash
-   git fetch <remote> pull/<N>/head:refs/pr/<N>
+   git fetch <remote> +pull/<N>/head:refs/pr/<N>
    git worktree add "$REPO_ROOT/pr_reviews/<N>" refs/pr/<N>
    ```
    This gives Claude the full source tree of the PR at `pr_reviews/<N>/`
@@ -432,22 +432,11 @@ all artifacts. See the `delete` subcommand below.
    (files may be renamed, deleted, or rewritten) and would give false
    confidence.
 
-5. **Map line numbers to diff positions.**
-   The REST API for creating reviews requires `position` (a line number
-   within the diff hunk), not absolute file line numbers. The submit step
-   fetches the diff:
-   ```bash
-   gh pr diff <N>
-   ```
-   Then maps each `(file, line, side)` tuple to the corresponding diff
-   position. If a line number doesn't appear in the diff, warn the user
-   and skip that comment.
-
-6. **Submit via GitHub API.**
+5. **Submit via GitHub API.**
    The `scripts/submit_review.sh` script handles submission. It uses a
    two-step approach:
 
-   **Step 6a: Create the review with inline comments (REST API).**
+   **Step 5a: Create the review with inline comments (REST API).**
    ```
    POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews
    ```
@@ -458,17 +447,20 @@ all artifacts. See the `delete` subcommand below.
      "comments": [
        {
          "path": "file.rs",
-         "position": 5,
+         "line": 42,
+         "side": "RIGHT",
          "body": "Comment text"
        }
      ]
    }
    ```
-   Inline comments use `position` (diff-relative). The review is always
-   created as **PENDING** first, regardless of the `event` field in
-   frontmatter. The user must explicitly finalize the review on GitHub.
+   Inline comments use the line-based format (`line`/`side`, with
+   optional `start_line`/`start_side` for multi-line comments).
+   The review is always created as **PENDING** first, regardless of
+   the `event` field in frontmatter. The user must explicitly finalize
+   the review on GitHub.
 
-   **Step 6b: Add file-level comments (GraphQL API).**
+   **Step 5b: Add file-level comments (GraphQL API).**
    The REST create-review endpoint does not support `subject_type: "file"`
    in its comments array. File-level comments are added after the review
    is created, using the GraphQL `addPullRequestReviewThread` mutation:
@@ -483,7 +475,7 @@ all artifacts. See the `delete` subcommand below.
    }
    ```
 
-7. **Report results.**
+6. **Report results.**
    Print:
    - Number of comments submitted
    - Any comments that were skipped (with reasons)
@@ -540,7 +532,7 @@ context to:
 5. **Update the git worktree.**
    Re-fetch the PR ref and recreate the worktree:
    ```bash
-   git fetch <remote> pull/<N>/head:refs/pr/<N>
+   git fetch <remote> +pull/<N>/head:refs/pr/<N>
    git worktree remove "$REPO_ROOT/pr_reviews/<N>" --force
    git worktree add "$REPO_ROOT/pr_reviews/<N>" refs/pr/<N>
    ```
@@ -684,7 +676,7 @@ versa).
 
 The `SKILL.md` body should be written so that it works regardless of how
 arguments are injected. The instructions should say "the user provides
-a subcommand (`new`, `submit`, or `redo`) and a PR number or URL" rather
+a subcommand (`new`, `submit`, `redo`, or `delete`) and a PR number or URL" rather
 than relying solely on `$0`/`$1` substitution. For Claude Code, we can
 additionally use `$0`/`$1` for convenience.
 
@@ -737,7 +729,7 @@ Key settings:
   this skill via `/pr-review`. The agent should never auto-invoke a review.
 - **`allowed-tools`** (Claude Code): Pre-approves the tools needed so the
   user is not prompted repeatedly during review generation or submission.
-- **`argument-hint`** (Claude Code): Shows `<new|submit|redo> <pr_number_or_url>`
+- **`argument-hint`** (Claude Code): Shows `<new|submit|redo|delete> <pr_number_or_url>`
   in the autocomplete menu.
 
 ### Argument Handling
@@ -783,7 +775,8 @@ reference, as recommended by the standard.
 POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews
 ```
 
-Request body (inline comments only; file-level comments are not supported):
+Request body (inline comments use line-based format; file-level comments
+are not supported by this endpoint):
 ```json
 {
   "commit_id": "sha",
@@ -791,12 +784,16 @@ Request body (inline comments only; file-level comments are not supported):
   "comments": [
     {
       "path": "file.rs",
-      "position": 5,
+      "line": 42,
+      "side": "RIGHT",
       "body": "Comment text"
     },
     {
       "path": "file.rs",
-      "position": 12,
+      "line": 50,
+      "side": "RIGHT",
+      "start_line": 45,
+      "start_side": "RIGHT",
       "body": "Multi-line comment"
     }
   ]

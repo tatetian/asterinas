@@ -51,7 +51,8 @@ fi
 # Default event to comment
 EVENT="${EVENT:-comment}"
 
-# Map event to GitHub API event string
+# Map event to GitHub API event string (informational only; review is
+# always created as PENDING so the user can finalize on GitHub)
 case "$EVENT" in
     comment)         API_EVENT="COMMENT" ;;
     approve)         API_EVENT="APPROVE" ;;
@@ -78,7 +79,7 @@ elif [ "$CURRENT_SHA" != "$HEAD_SHA" ]; then
     echo "  Review's head_sha: $HEAD_SHA"
     echo "  Current head_sha:  $CURRENT_SHA"
     echo ""
-    echo "Run '/pr-review new $PR_NUMBER' to regenerate the review."
+    echo "Run '/pr-review redo $PR_NUMBER' to generate a follow-up review."
     exit 1
 else
     echo "Staleness check: OK (head_sha matches)"
@@ -112,7 +113,6 @@ with open(reviews_file, 'r') as f:
 # Split into sections by ---
 # First, skip the frontmatter (between first two ---)
 parts = content.split('\n')
-in_frontmatter = False
 frontmatter_count = 0
 body_start = 0
 for i, line in enumerate(parts):
@@ -441,13 +441,17 @@ if [ "$NUM_FILE_LEVEL" -gt 0 ]; then
     if [ -z "$REVIEW_NODE_ID" ]; then
         echo "Warning: Could not fetch node_id for review. File-level comments not added."
     else
-        FL_ADDED=0
-        FL_FAILED=0
+        FL_TMPFILE=$(mktemp)
         echo "$FILE_LEVEL_JSON" | python3 -c "
 import sys, json
 for c in json.load(sys.stdin):
     print(json.dumps(c))
-" | while IFS= read -r FL_COMMENT; do
+" > "$FL_TMPFILE"
+
+        FL_ADDED=0
+        FL_FAILED=0
+        while IFS= read -r FL_COMMENT; do
+            COMMENT_PATH=$(echo "$FL_COMMENT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('path','?'))")
             GQL_MUTATION=$(echo "$FL_COMMENT" | REVIEW_NODE_ID="$REVIEW_NODE_ID" python3 -c "
 import sys, json, os
 c = json.load(sys.stdin)
@@ -457,12 +461,16 @@ path = c['path']
 print('mutation { addPullRequestReviewThread(input: { pullRequestReviewId: \"%s\", body: %s, path: \"%s\", subjectType: FILE }) { thread { id } } }' % (review_id, body, path))
 ")
             gh api graphql -f query="$GQL_MUTATION" > /dev/null 2>&1 && {
-                echo "  Added file-level comment on ${FL_COMMENT}" | python3 -c "import sys,json; c=json.load(sys.stdin.readline().split('on ',1)[1] if False else sys.stdin); print()" 2>/dev/null || true
+                FL_ADDED=$((FL_ADDED + 1))
             } || {
-                COMMENT_PATH=$(echo "$FL_COMMENT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('path','?'))")
+                FL_FAILED=$((FL_FAILED + 1))
                 echo "  Warning: Failed to add file-level comment on $COMMENT_PATH"
             }
-        done
+        done < "$FL_TMPFILE"
+        rm -f "$FL_TMPFILE"
+
+        echo "  Added $FL_ADDED file-level comment(s)."
+        [ "$FL_FAILED" -gt 0 ] && echo "  Failed to add $FL_FAILED file-level comment(s)."
     fi
 fi
 

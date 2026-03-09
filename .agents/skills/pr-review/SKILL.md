@@ -57,7 +57,7 @@ hosts the PR (compare remote URLs against the repo from Step 2).
 Typically this is `upstream` for upstream PRs or `origin` for fork PRs.
 
 ```bash
-git fetch <remote> pull/<N>/head:refs/pr/<N>
+git fetch <remote> +pull/<N>/head:refs/pr/<N>
 ```
 
 Check if a worktree already exists at `$REPO_ROOT/pr_reviews/<N>`:
@@ -217,7 +217,7 @@ If no previous review exists, fall back to the `new` subcommand behavior
 
 Re-fetch the PR ref to get the latest code:
 ```bash
-git fetch <remote> pull/<N>/head:refs/pr/<N>
+git fetch <remote> +pull/<N>/head:refs/pr/<N>
 ```
 
 Remove and recreate the worktree to pick up the new code:
