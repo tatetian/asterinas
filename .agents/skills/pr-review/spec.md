@@ -4,8 +4,8 @@
 
 A skill called `pr-review` that enables maintainers to generate,
 edit, and submit GitHub PR reviews entirely from the CLI. The skill has
-three subcommands: `new` (generate), `submit` (post to GitHub), and
-`redo` (follow-up review after PR updates).
+four subcommands: `new` (generate), `submit` (post to GitHub),
+`redo` (follow-up review after PR updates), and `delete` (clean up).
 
 The core workflow supports iterative review-revise cycles.
 
@@ -389,12 +389,8 @@ timestamp and the symlink is updated.
 
 ### Cleanup
 
-When a review is no longer needed, the worktree can be removed:
-```bash
-git worktree remove pr_reviews/<N>
-rm -f pr_reviews/<N>.md
-```
-This is not done automatically. The user decides when to clean up.
+When a review is no longer needed, use `/pr-review delete <N>` to remove
+all artifacts. See the `delete` subcommand below.
 
 ## Subcommand: `/pr-review submit`
 
@@ -594,6 +590,58 @@ context to:
 | When to use         | First review of a PR           | After PR author pushes updates     |
 | Fallback            | N/A                            | Falls back to `new` if no prior review |
 
+## Subcommand: `/pr-review delete`
+
+### Input
+
+```
+/pr-review delete <pr_number> [--yes]
+```
+
+The optional `--yes` flag skips the confirmation prompt.
+
+### Purpose
+
+Remove all local artifacts for a given PR review. This is the cleanup
+command that should be run when a review is complete (merged or closed)
+and the local files are no longer needed.
+
+### Steps
+
+1. **Resolve the repo root.**
+   ```bash
+   REPO_ROOT="$(git rev-parse --show-toplevel)"
+   ```
+
+2. **Ask for confirmation.**
+   Unless `--yes` was passed, list what will be deleted and ask the user
+   to confirm. If the user declines, abort without deleting anything.
+
+3. **Remove the git worktree.**
+   If a worktree exists at `$REPO_ROOT/pr_reviews/<N>`, remove it:
+   ```bash
+   git worktree remove "$REPO_ROOT/pr_reviews/<N>" --force
+   ```
+   This also deletes all review files inside the worktree directory.
+
+4. **Remove the symlink.**
+   ```bash
+   rm -f "$REPO_ROOT/pr_reviews/<N>.md"
+   ```
+
+5. **Clean up the git ref.**
+   ```bash
+   git update-ref -d "refs/pr/<N>"
+   ```
+
+6. **Report to user.**
+   Print a confirmation that all artifacts for PR #N have been removed.
+
+### Idempotency
+
+Running `delete` when no artifacts exist is a no-op (after confirmation).
+Each step silently skips if the target does not exist.
+
 ## Skill Registration
 
 The skill follows the [Agent Skills](https://agentskills.io) open standard.
@@ -675,7 +723,7 @@ description: >
 # Standard fields
 compatibility: Requires gh (GitHub CLI) and git
 # Claude Code extensions (ignored by other tools)
-argument-hint: <new|submit|redo> <pr_number_or_url>
+argument-hint: <new|submit|redo|delete> <pr_number_or_url>
 disable-model-invocation: true
 allowed-tools: Bash(gh *), Bash(git *), Read, Write, Glob, Grep, Agent
 ---
@@ -700,7 +748,7 @@ In the `SKILL.md` body, instructions are written tool-agnostically:
 
 ```
 The user provides:
-- A subcommand: `new`, `submit`, or `redo`
+- A subcommand: `new`, `submit`, `redo`, or `delete`
 - A PR number (e.g., 2887) or GitHub URL
 ```
 
@@ -717,6 +765,7 @@ Examples of user invocation:
 /pr-review new https://github.com/asterinas/asterinas/pull/2887
 /pr-review submit 2887
 /pr-review redo 2887
+/pr-review delete 2887
 ```
 
 ### Supporting Files

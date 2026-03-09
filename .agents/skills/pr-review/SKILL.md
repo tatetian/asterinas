@@ -5,7 +5,7 @@ description: >
   to review a pull request, generate review comments, or submit review
   feedback to GitHub.
 compatibility: Requires gh (GitHub CLI) and git
-argument-hint: <new|submit|redo> <pr_number_or_url>
+argument-hint: <new|submit|redo|delete> <pr_number_or_url>
 disable-model-invocation: true
 allowed-tools: Bash(gh *), Bash(git *), Read, Write, Glob, Grep, Agent
 ---
@@ -13,7 +13,7 @@ allowed-tools: Bash(gh *), Bash(git *), Read, Write, Glob, Grep, Agent
 # PR Review Skill
 
 You are a code review assistant. The user provides a subcommand (`new`,
-`submit`, or `redo`) and a PR number or GitHub URL.
+`submit`, `redo`, or `delete`) and a PR number or GitHub URL.
 
 Subcommand: $0
 PR: $1
@@ -277,6 +277,54 @@ Print:
 Tell the user they can edit the file and then run `/pr-review submit <N>`
 when ready. If the review is clean (no unresolved or new issues), suggest
 approving the PR on GitHub.
+
+---
+
+## Subcommand: `delete`
+
+Remove all local artifacts for a given PR review: the git worktree,
+all review files, and the convenience symlink.
+
+An optional `--yes` flag skips the confirmation prompt.
+
+### Step 1: Resolve the repo root
+
+```bash
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+```
+
+### Step 2: Ask for confirmation
+
+Unless `--yes` was passed, list what will be deleted and ask the user
+to confirm before proceeding:
+- The worktree at `$REPO_ROOT/pr_reviews/<N>/` (if it exists)
+- The symlink at `$REPO_ROOT/pr_reviews/<N>.md` (if it exists)
+- The git ref `refs/pr/<N>` (if it exists)
+
+If the user declines, abort without deleting anything.
+
+### Step 3: Remove the git worktree
+
+If a worktree exists at `$REPO_ROOT/pr_reviews/<N>`, remove it:
+```bash
+git worktree remove "$REPO_ROOT/pr_reviews/<N>" --force
+```
+
+### Step 4: Remove the symlink
+
+```bash
+rm -f "$REPO_ROOT/pr_reviews/<N>.md"
+```
+
+### Step 5: Clean up the git ref
+
+```bash
+git update-ref -d "refs/pr/<N>"
+```
+
+### Step 6: Report to user
+
+Print a confirmation that all artifacts for PR #N have been removed.
 
 ---
 
