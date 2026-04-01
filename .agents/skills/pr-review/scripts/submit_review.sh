@@ -218,94 +218,22 @@ fi
 echo ""
 echo "Submitting review to GitHub..."
 
-# Build the gh api command
-# We use --input to pass JSON via stdin to avoid shell escaping issues.
-# Pass all values via environment variables to avoid heredoc quoting issues.
-# Uses the newer line-based API format (line/side/start_line/start_side)
-# instead of the legacy position-based format.
-REVIEW_JSON=$(PR_SUMMARY="$SUMMARY" PR_COMMENTS="$COMMENTS_ARRAY" PR_HEAD_SHA="$HEAD_SHA" python3 << 'PYEOF2'
-import json, os
+echo "  Total comments: $NUM_COMMENTS"
+[ "$NUM_SKIPPED" -gt 0 ] && echo "  Empty (skipped): $NUM_SKIPPED"
 
-comments = json.loads(os.environ["PR_COMMENTS"])
-
-# Process comments: use line-based format, handle file-level comments
-api_comments = []
-for c in comments:
-    path = c["path"]
-
-    if "subject_type" in c and c["subject_type"] == "file":
-        # File-level comments are not supported by the REST create-review
-        # endpoint. They will be added via GraphQL after the review is created.
-        continue
-
-    line = c.get("line")
-    side = c.get("side", "RIGHT")
-
-    if line:
-        api_comment = {
-            "path": path,
-            "line": line,
-            "side": side,
-            "body": c["body"]
-        }
-
-        if "start_line" in c:
-            api_comment["start_line"] = c["start_line"]
-            api_comment["start_side"] = c.get("start_side", side)
-
-        api_comments.append(api_comment)
-
-payload = {
-    "commit_id": os.environ["PR_HEAD_SHA"],
-    "body": os.environ["PR_SUMMARY"],
-    "comments": api_comments
-}
-
-# Note: omitting "event" creates a PENDING review
-
-file_level = [c for c in comments if c.get("subject_type") == "file"]
-
-result = {
-    "payload": payload,
-    "skipped": [],
-    "file_level": file_level
-}
-print(json.dumps(result))
-PYEOF2
-)
-
-# Extract payload, skipped info, and file-level merge count from the result
-PAYLOAD=$(echo "$REVIEW_JSON" | python3 -c "import sys,json; print(json.dumps(json.load(sys.stdin)['payload']))")
-NUM_API_COMMENTS=$(echo "$PAYLOAD" | python3 -c "import sys,json; print(len(json.load(sys.stdin).get('comments', [])))")
-DIFF_SKIPPED=$(echo "$REVIEW_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); print(len(d.get('skipped', [])))")
-FILE_LEVEL_JSON=$(echo "$REVIEW_JSON" | python3 -c "import sys,json; print(json.dumps(json.load(sys.stdin).get('file_level', [])))")
-NUM_FILE_LEVEL=$(echo "$FILE_LEVEL_JSON" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))")
-
-echo "  Inline comments:    $NUM_API_COMMENTS"
-[ "$NUM_FILE_LEVEL" -gt 0 ] && echo "  File-level comments: $NUM_FILE_LEVEL (added via GraphQL after review creation)"
-[ "$NUM_SKIPPED" -gt 0 ] && echo "  Empty (skipped):     $NUM_SKIPPED"
-[ "$DIFF_SKIPPED" -gt 0 ] && echo "  Not in diff (skipped): $DIFF_SKIPPED"
-
-# Report any skipped comments
-if [ "$DIFF_SKIPPED" -gt 0 ]; then
-    echo ""
-    echo "Skipped comments (line not found in diff):"
-    echo "$REVIEW_JSON" | python3 -c "
-import sys, json
-d = json.load(sys.stdin)
-for s in d.get('skipped', []):
-    line = s.get('line', '?')
-    print(f\"  - {s['path']} line {line}: {s['reason']}\")
-"
-fi
-
-# --- Check for existing pending review ---
+# --- Create or find the pending review ---
+# Comments are always added via GraphQL addPullRequestReviewThread after the
+# review exists. The REST create-review endpoint's inline comment support
+# does not reliably position comments on diff lines (gh translates REST to
+# GraphQL internally, and DraftPullRequestReviewThread lacks line/side fields).
 EXISTING_REVIEW_ID=$(gh api "repos/$REPO/pulls/$PR_NUMBER/reviews" \
     --jq '.[] | select(.state == "PENDING") | .id' 2>/dev/null | head -n1 || echo "")
 
 if [ -n "$EXISTING_REVIEW_ID" ]; then
     echo ""
     echo "Found existing pending review (ID: $EXISTING_REVIEW_ID). Appending to it."
+
+    REVIEW_ID="$EXISTING_REVIEW_ID"
 
     # Get the GraphQL node_id for the existing review (required by GraphQL mutations)
     REVIEW_NODE_ID=$(gh api "repos/$REPO/pulls/$PR_NUMBER/reviews/$EXISTING_REVIEW_ID" \
@@ -330,10 +258,47 @@ if [ -n "$EXISTING_REVIEW_ID" ]; then
             echo "  manually when finalizing the review on GitHub."
         }
     fi
+else
+    # No existing pending review -- create one with summary only (no comments).
+    PAYLOAD=$(PR_SUMMARY="$SUMMARY" PR_HEAD_SHA="$HEAD_SHA" python3 -c "
+import json, os
+print(json.dumps({
+    'commit_id': os.environ['PR_HEAD_SHA'],
+    'body': os.environ['PR_SUMMARY'],
+    'comments': []
+}))
+")
 
-    # Add each comment to the existing review via GraphQL addPullRequestReviewThread.
-    # Use the pre-position-mapping comments (COMMENTS_ARRAY from the parser) which
-    # have line/side fields instead of diff positions.
+    RESPONSE=$(echo "$PAYLOAD" | gh api \
+        "repos/$REPO/pulls/$PR_NUMBER/reviews" \
+        --method POST \
+        --input - 2>&1) || {
+        echo ""
+        echo "Error: GitHub API call failed."
+        echo "$RESPONSE"
+        exit 1
+    }
+
+    REVIEW_ID=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('id', 'unknown'))" 2>/dev/null || echo "unknown")
+    REVIEW_NODE_ID=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('node_id', ''))" 2>/dev/null || echo "")
+
+    if [ -z "$REVIEW_NODE_ID" ]; then
+        # Fetch node_id separately if not in the create response
+        REVIEW_NODE_ID=$(gh api "repos/$REPO/pulls/$PR_NUMBER/reviews/$REVIEW_ID" \
+            --jq '.node_id' 2>/dev/null || echo "")
+    fi
+
+    if [ -z "$REVIEW_NODE_ID" ]; then
+        echo "Error: Could not determine node_id for new review."
+        exit 1
+    fi
+fi
+
+# --- Add all comments via GraphQL ---
+# Each comment is added as a review thread using addPullRequestReviewThread,
+# which reliably supports line/side positioning for inline comments and
+# subjectType: FILE for file-level comments.
+if [ "$NUM_COMMENTS" -gt 0 ]; then
     COMMENTS_TMPFILE=$(mktemp)
     echo "$COMMENTS_ARRAY" | python3 -c "
 import sys, json
@@ -411,67 +376,9 @@ print(mutation)
     done < "$COMMENTS_TMPFILE"
     rm -f "$COMMENTS_TMPFILE"
 
-    echo "  Added $ADDED comment(s) to existing review."
+    echo ""
+    echo "  Added $ADDED comment(s)."
     [ "$FAILED" -gt 0 ] && echo "  Failed to add $FAILED comment(s)."
-
-    REVIEW_ID="$EXISTING_REVIEW_ID"
-else
-    # No existing pending review -- create a new one via REST API
-    RESPONSE=$(echo "$PAYLOAD" | gh api \
-        "repos/$REPO/pulls/$PR_NUMBER/reviews" \
-        --method POST \
-        --input - 2>&1) || {
-        echo ""
-        echo "Error: GitHub API call failed."
-        echo "$RESPONSE"
-        exit 1
-    }
-
-    REVIEW_ID=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('id', 'unknown'))" 2>/dev/null || echo "unknown")
-fi
-
-# --- Add file-level comments via GraphQL ---
-# The REST create-review endpoint does not support subject_type: "file",
-# so file-level comments are added after the review exists.
-if [ "$NUM_FILE_LEVEL" -gt 0 ]; then
-    # Get the GraphQL node_id for the review
-    REVIEW_NODE_ID=$(gh api "repos/$REPO/pulls/$PR_NUMBER/reviews/$REVIEW_ID" \
-        --jq '.node_id' 2>/dev/null || echo "")
-
-    if [ -z "$REVIEW_NODE_ID" ]; then
-        echo "Warning: Could not fetch node_id for review. File-level comments not added."
-    else
-        FL_TMPFILE=$(mktemp)
-        echo "$FILE_LEVEL_JSON" | python3 -c "
-import sys, json
-for c in json.load(sys.stdin):
-    print(json.dumps(c))
-" > "$FL_TMPFILE"
-
-        FL_ADDED=0
-        FL_FAILED=0
-        while IFS= read -r FL_COMMENT; do
-            COMMENT_PATH=$(echo "$FL_COMMENT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('path','?'))")
-            GQL_MUTATION=$(echo "$FL_COMMENT" | REVIEW_NODE_ID="$REVIEW_NODE_ID" python3 -c "
-import sys, json, os
-c = json.load(sys.stdin)
-review_id = os.environ['REVIEW_NODE_ID']
-body = json.dumps(c['body'])
-path = c['path']
-print('mutation { addPullRequestReviewThread(input: { pullRequestReviewId: \"%s\", body: %s, path: \"%s\", subjectType: FILE }) { thread { id } } }' % (review_id, body, path))
-")
-            gh api graphql -f query="$GQL_MUTATION" > /dev/null 2>&1 && {
-                FL_ADDED=$((FL_ADDED + 1))
-            } || {
-                FL_FAILED=$((FL_FAILED + 1))
-                echo "  Warning: Failed to add file-level comment on $COMMENT_PATH"
-            }
-        done < "$FL_TMPFILE"
-        rm -f "$FL_TMPFILE"
-
-        echo "  Added $FL_ADDED file-level comment(s)."
-        [ "$FL_FAILED" -gt 0 ] && echo "  Failed to add $FL_FAILED file-level comment(s)."
-    fi
 fi
 
 echo ""
