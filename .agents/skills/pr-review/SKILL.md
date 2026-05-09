@@ -80,11 +80,28 @@ git worktree add "$REPO_ROOT/pr_reviews/<N>" refs/pr/<N>
 If `$REPO_ROOT/pr_reviews/.gitignore` does not exist, create it with
 content `*` so that the entire directory is ignored by git.
 
-### Step 6: Fetch the PR diff
+### Step 6: Fetch the PR diff and the valid-lines map
 
 ```bash
-gh pr diff <N>
+gh pr diff <N> --repo <owner/repo> > /tmp/pr_<N>.diff
 ```
+
+Also compute the **valid-lines map** — the set of line numbers per file on
+which GitHub will accept inline comments. GitHub silently rejects comments
+anchored to lines that aren't part of any diff hunk on the RIGHT side
+(common pitfall: a *modified* file looks complete in the worktree, but only
+its added/changed lines and a few context lines around them are in the
+diff). Run:
+
+```bash
+python3 ${CLAUDE_SKILL_DIR}/scripts/validate_review.py \
+    --diff /tmp/pr_<N>.diff \
+    --emit-valid-lines > /tmp/pr_<N>_valid_lines.json
+```
+
+The resulting JSON looks like `{"path/to/file.rs": [1, 2, 3, ...], ...}`.
+Pass this file path to every sub-agent (Step 7b) and the verifier (Step 7e)
+so they can check anchors before assigning them.
 
 ### Step 7: Generate the review file
 
@@ -96,11 +113,12 @@ focuses deeply on one aspect without context dilution.
 
 First, read the diff and save it. Identify the list of changed files
 and the PR description. Each sub-agent will need:
-- The PR diff
+- The PR diff (saved at `/tmp/pr_<N>.diff` in Step 6)
 - The PR description and title
 - Access to the source tree at `$REPO_ROOT/pr_reviews/<N>/`
 - The project's review guidelines (from CLAUDE.md or AGENTS.md)
 - The review file format specification (from this skill)
+- **The valid-lines map at `/tmp/pr_<N>_valid_lines.json`** (from Step 6) — the set of line numbers per file on which GitHub will accept inline comments. Modified files (vs added) include only their changed lines plus a few context lines around them; pre-existing lines outside any diff hunk are NOT anchorable.
 
 #### Step 7b: Spawn parallel sub-agent reviews
 
@@ -113,6 +131,19 @@ Each sub-agent should return its findings as a list of review comments
 in the review file format (`` ## `path/to/file` line N `` headings with
 bodies). The sub-agent does NOT write to a file — it returns its
 comments as text in its response.
+
+**Anchoring rule (mandatory)**: before assigning a `line N` to any heading,
+the sub-agent must check `/tmp/pr_<N>_valid_lines.json` and confirm that
+`N` is in the list for that path. If the issue is on a pre-existing line
+that this PR didn't modify, choose ONE of these escapes — never anchor
+to a line outside the map:
+1. **Re-anchor** to a nearby line that IS in the map (e.g., a newly added
+   line that introduces or interacts with the issue), and explain in the
+   comment body which other (pre-existing) lines also need fixing.
+2. **Convert to file-level** by dropping the `line N` suffix:
+   `` ## `path/to/file` `` — for issues that are inherently file-wide
+   (e.g., "add `#![deny(unsafe_code)]` at the crate root") or for
+   commentary on pre-existing code that this PR builds on.
 
 **Review aspects** (one sub-agent per aspect):
 
@@ -182,10 +213,12 @@ Sub-agents routinely hallucinate specific facts: line numbers drift, file modes 
 Spawn ONE additional sub-agent with a **clean context** (a fresh Agent invocation, not a continuation of an earlier sub-agent). Brief it with:
 - The absolute path to the draft review file
 - The absolute path to the PR worktree (`$REPO_ROOT/pr_reviews/<N>/`)
+- The absolute path to the valid-lines map (`/tmp/pr_<N>_valid_lines.json`)
 - Explicit instruction to verify:
   1. **Every concrete claim** — line numbers, file modes, behavior assertions about shell / Rust / framework semantics, named functions and constants, external tool/flag names.
   2. **Every verdict** — is "blocker" warranted? Is "minor" understated?
   3. **Every fix snippet** — does the suggested code actually compile, parse, or otherwise do what the comment says? Does the suggested command flag exist? Does the suggested API field exist?
+  4. **Every line-anchored heading** — cross-check `## \`path\` line N` against the valid-lines map. Any line not in the map will be silently dropped by GitHub on submit; flag those for re-anchoring or conversion to file-level.
 - Instruction to return a structured report (claims-confirmed / claims-with-errors / claims-unverifiable) and NOT rewrite the review itself.
 
 Apply the reported fixes to the draft. For claims the sub-agent could not verify from local files (e.g., external documentation), either hedge the language ("per nixpkgs convention...") or cite a source; do not leave unhedged assertions the sub-agent flagged as unverifiable.
@@ -247,6 +280,23 @@ If any headings fail validation, fix them before reporting to the user.
 Use the file-level format (`` ## `path/to/file` ``) for comments that
 don't target a specific line range.
 
+Also run the **line-in-diff** check, which catches the more insidious
+failure mode where a heading is well-formed but anchors to a line GitHub
+will silently reject:
+
+```bash
+python3 ${CLAUDE_SKILL_DIR}/scripts/validate_review.py \
+    --review "$REPO_ROOT/pr_reviews/<N>/review-<TIMESTAMP>.md" \
+    --diff /tmp/pr_<N>.diff
+```
+
+This script exits non-zero with a per-comment list of problems if any
+line-anchored heading targets a line not in the diff. For each, it prints
+the nearest valid lines (so you can re-anchor) and reminds you to drop
+the `line N` suffix to make the comment file-level. Fix the review file
+before proceeding to Step 9 — the same check runs again at submit time
+and refuses to submit if anything is invalid.
+
 ### Step 9: Report to user
 
 Print the path to the generated file and how many comments were generated.
@@ -307,7 +357,11 @@ bash ${CLAUDE_SKILL_DIR}/scripts/submit_review.sh "$REPO_ROOT/pr_reviews/<N>.md"
 ```
 
 This script parses the review file and calls the GitHub API to create a
-pending review.
+pending review. Before any GraphQL mutation, it runs `validate_review.py`
+as a **pre-flight check**: if any line-anchored heading targets a line
+that isn't in the PR diff, the script aborts with a per-comment list of
+problems (and the nearest valid lines as a hint). Fix the review file —
+either re-anchor or convert to file-level — and re-run.
 
 ### Step 6: Report results
 
@@ -369,11 +423,18 @@ Note: the review files inside the worktree directory are lost when the
 worktree is removed. This is fine because the previous review has
 already been read in Step 4.
 
-### Step 6: Fetch the new PR diff
+### Step 6: Fetch the new PR diff and the valid-lines map
 
 ```bash
-gh pr diff <N>
+gh pr diff <N> --repo <owner/repo> > /tmp/pr_<N>.diff
+python3 ${CLAUDE_SKILL_DIR}/scripts/validate_review.py \
+    --diff /tmp/pr_<N>.diff \
+    --emit-valid-lines > /tmp/pr_<N>_valid_lines.json
 ```
+
+Same as `new` Step 6 — the valid-lines map is fed into every sub-agent and
+the verifier so anchors land inside actual diff hunks (see `new` Step 6
+for the rationale).
 
 ### Step 7: Generate the follow-up review
 
@@ -386,9 +447,9 @@ Follow the same parallel sub-agent flow as `new` Steps 7a through 7f (review, me
 
 ### Step 8: Validate comment headings
 
-Same as `new` Step 8. Run the heading validation script on the generated
-review file and fix any headings that don't match the parser's regex
-before reporting to the user.
+Same as `new` Step 8. Run both the heading-format check and the
+line-in-diff check (`scripts/validate_review.py`) on the generated review
+file and fix any failures before reporting to the user.
 
 ### Step 9: Report to user
 
@@ -509,6 +570,15 @@ For architectural comments that span multiple files or don't target a
 specific line, use the **file-level** format: `` ## `path/to/most-relevant-file.rs` ``.
 Pick the single most relevant file and put the cross-file context in the
 comment body.
+
+**Line-in-diff constraint (often-missed):** an inline comment is only
+accepted by GitHub if its line is shown in some hunk of the PR's unified
+diff. For *modified* files, that means added lines plus the few context
+lines around them — pre-existing code outside any hunk is NOT anchorable
+even though it shows up in the worktree. When commenting on pre-existing
+code that this PR builds on, use the file-level format. The
+`scripts/validate_review.py` helper checks this automatically, and
+`submit_review.sh` runs it as a pre-flight check before any submit.
 
 Group headings like `# Correctness` or `# API Design` (first-level `#`
 headings) are allowed for organizing the review for human readability.

@@ -214,6 +214,30 @@ if [ "$NUM_COMMENTS" -eq 0 ] && [ -z "$SUMMARY" ]; then
     exit 0
 fi
 
+# --- Pre-flight: validate that line-anchored comments target lines in the diff ---
+# GitHub silently drops inline comments anchored to lines that aren't part of
+# any diff hunk on the RIGHT side. Validate up front so the user can fix the
+# review file rather than discovering the problem only via post-submit
+# verification (which costs a round-trip and leaves a half-populated PENDING
+# review behind).
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VALIDATOR="$SCRIPT_DIR/validate_review.py"
+
+if [ -x "$VALIDATOR" ] || [ -f "$VALIDATOR" ]; then
+    echo ""
+    echo "Pre-flight: checking that every line-anchored comment is in the PR diff..."
+    if ! python3 "$VALIDATOR" \
+        --review "$REVIEWS_FILE" \
+        --pr "$PR_NUMBER" \
+        --repo "$REPO"; then
+        echo ""
+        echo "Aborting: refusing to submit a review whose comments will be silently dropped."
+        echo "Edit the review file (re-anchor or convert to file-level) and re-run"
+        echo "'/pr-review submit $PR_NUMBER'."
+        exit 1
+    fi
+fi
+
 # --- Submit review ---
 echo ""
 echo "Submitting review to GitHub..."
