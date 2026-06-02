@@ -32,6 +32,11 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+    env:
+      # Single source of truth for the Codex model name. Referenced by the
+      # codex-action `model:` input and embedded in the review prelude so
+      # readers know which model produced the comments.
+      CODEX_MODEL: gpt-5.3-codex
     steps:
       # The job-level `contains()` is a substring match. This step does a
       # stricter check: "@boterinas codex" must appear at the start of a line
@@ -177,7 +182,7 @@ jobs:
         uses: openai/codex-action@94bb7a052e529936e5260a35838e61b190855739 # v1
         with:
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
-          model: gpt-5.3-codex
+          model: ${{ env.CODEX_MODEL }}
           prompt-file: codex-prompt.md
           output-schema-file: .github/codex-output-schema.json
           output-file: codex-output.json
@@ -210,6 +215,12 @@ jobs:
             echo "Codex output is missing required fields or is invalid JSON, skipping."
             exit 0
           fi
+          PRELUDE=$(cat <<EOF
+          ## Automated review by \`aster-pr-review\` using Codex (\`${CODEX_MODEL}\`)
+
+          These suggestions are not always correct. Please respond to each comment — either address it or push back — rather than skipping it. After these AI-generated comments are resolved, human reviewers will step in for a manual review.
+          EOF
+          )
           python3 .agents/skills/aster-pr-review/scripts/from_codex_json.py \
             --codex-json codex-output.json \
             --pr "${PR_NUMBER}" \
@@ -219,7 +230,7 @@ jobs:
             --title "${PR_TITLE}" \
             --event comment \
             --diff pr.diff \
-            --attribution "## Reviews by Codex" \
+            --attribution "${PRELUDE}" \
             > review.md
           echo "=== Generated review.md ==="
           cat review.md

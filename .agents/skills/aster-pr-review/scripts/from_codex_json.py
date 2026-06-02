@@ -73,12 +73,9 @@ def format_comment_body(finding: dict) -> str:
     title = finding.get("title", "").strip() or "Review comment"
     body = finding.get("body", "").strip()
     priority = int(finding.get("priority", 2))
-    confidence = float(finding.get("confidence_score", 0.0))
     severity = SEVERITY_BY_PRIORITY.get(priority, "minor")
 
-    parts = [f"**{title}** ({severity}): {body}"]
-    parts.append(f"_Confidence: {confidence:.2f} | Priority: P{priority}_")
-    return "\n\n".join(parts)
+    return f"**{title}** ({severity}): {body}"
 
 
 def render(
