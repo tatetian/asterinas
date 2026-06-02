@@ -21,7 +21,7 @@ REVIEWS_FILE="$1"
 
 if [ ! -f "$REVIEWS_FILE" ]; then
     echo "Error: $REVIEWS_FILE not found."
-    echo "Run '/pr-review new <N>' first to generate the review file."
+    echo "Run '/aster-pr-review new <N>' first to generate the review file."
     exit 1
 fi
 
@@ -79,7 +79,7 @@ elif [ "$CURRENT_SHA" != "$HEAD_SHA" ]; then
     echo "  Review's head_sha: $HEAD_SHA"
     echo "  Current head_sha:  $CURRENT_SHA"
     echo ""
-    echo "Run '/pr-review redo $PR_NUMBER' to generate a follow-up review."
+    echo "Run '/aster-pr-review redo $PR_NUMBER' to generate a follow-up review."
     exit 1
 else
     echo "Staleness check: OK (head_sha matches)"
@@ -233,7 +233,7 @@ if [ -x "$VALIDATOR" ] || [ -f "$VALIDATOR" ]; then
         echo ""
         echo "Aborting: refusing to submit a review whose comments will be silently dropped."
         echo "Edit the review file (re-anchor or convert to file-level) and re-run"
-        echo "'/pr-review submit $PR_NUMBER'."
+        echo "'/aster-pr-review submit $PR_NUMBER'."
         exit 1
     fi
 fi
@@ -539,7 +539,7 @@ for m in json.load(sys.stdin)['missing']:
             echo "    - GraphQL accepted the mutation but silently dropped the thread."
             echo ""
             echo "  Add the missing comments manually on GitHub, or edit the review file to"
-            echo "  fix the offending comments and re-run '/pr-review submit $PR_NUMBER'."
+            echo "  fix the offending comments and re-run '/aster-pr-review submit $PR_NUMBER'."
         else
             echo "  All expected comments present."
         fi

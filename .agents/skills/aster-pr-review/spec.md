@@ -2,7 +2,7 @@
 
 ## Overview
 
-A skill called `pr-review` that enables maintainers to generate,
+A skill called `aster-pr-review` that enables maintainers to generate,
 edit, and submit GitHub PR reviews entirely from the CLI. The skill has
 four subcommands: `new` (generate), `submit` (post to GitHub),
 `redo` (follow-up review after PR updates), and `delete` (clean up).
@@ -23,7 +23,7 @@ The core workflow supports iterative review-revise cycles.
 ## Workflow
 
 ```
-Step 1: /pr-review new <PR>         Step 2: Edit <N>.md   Step 3: /pr-review submit <PR>
+Step 1: /aster-pr-review new <PR>         Step 2: Edit <N>.md   Step 3: /aster-pr-review submit <PR>
        |                                                          |
        v                                                          v
  1. Fetch PR metadata                                     1. Parse <N>.md
@@ -42,7 +42,7 @@ Step 1: /pr-review new <PR>         Step 2: Edit <N>.md   Step 3: /pr-review sub
 
                         Step 4: PR author updates the PR
 
-Step 5: /pr-review redo <PR>        Step 6: Edit <N>.md   Step 7: /pr-review submit <PR>
+Step 5: /aster-pr-review redo <PR>        Step 6: Edit <N>.md   Step 7: /aster-pr-review submit <PR>
        |                                                          |
        v                                                          v
  1. Read previous review                                  (same as Step 3)
@@ -303,12 +303,12 @@ The parser splits on these boundaries.
 4. Build API payload and POST
 ```
 
-## Subcommand: `/pr-review new`
+## Subcommand: `/aster-pr-review new`
 
 ### Input
 
 ```
-/pr-review new <pr_number_or_url>
+/aster-pr-review new <pr_number_or_url>
 ```
 
 Accepts:
@@ -402,15 +402,15 @@ timestamp and the symlink is updated.
 
 ### Cleanup
 
-When a review is no longer needed, use `/pr-review delete <N>` to remove
+When a review is no longer needed, use `/aster-pr-review delete <N>` to remove
 all artifacts. See the `delete` subcommand below.
 
-## Subcommand: `/pr-review submit`
+## Subcommand: `/aster-pr-review submit`
 
 ### Input
 
 ```
-/pr-review submit <pr_number>
+/aster-pr-review submit <pr_number>
 ```
 
 ### Steps
@@ -438,7 +438,7 @@ all artifacts. See the `delete` subcommand below.
    - If they match, proceed.
    - If they differ, **refuse to submit**. Print a message explaining that
      the PR has been updated since the review was generated, and instruct
-     the user to run `/pr-review redo <N>` to generate a follow-up review.
+     the user to run `/aster-pr-review redo <N>` to generate a follow-up review.
 
    Rationale: posting comments on outdated line numbers is worse than
    re-reviewing. Auto-remapping line numbers across commits is fragile
@@ -526,12 +526,12 @@ all artifacts. See the `delete` subcommand below.
 | GitHub API error                     | Print error body, do not retry                        |
 | Post-submit verification: missing    | Report (path, line) pairs not found on the review; suggest re-submitting after edit |
 
-## Subcommand: `/pr-review redo`
+## Subcommand: `/aster-pr-review redo`
 
 ### Input
 
 ```
-/pr-review redo <pr_number_or_url>
+/aster-pr-review redo <pr_number_or_url>
 ```
 
 ### Purpose
@@ -609,12 +609,12 @@ context to:
 | When to use         | First review of a PR           | After PR author pushes updates     |
 | Fallback            | N/A                            | Falls back to `new` if no prior review |
 
-## Subcommand: `/pr-review delete`
+## Subcommand: `/aster-pr-review delete`
 
 ### Input
 
 ```
-/pr-review delete <pr_number> [--yes]
+/aster-pr-review delete <pr_number> [--yes]
 ```
 
 The optional `--yes` flag skips the confirmation prompt.
@@ -709,7 +709,7 @@ additionally use `$0`/`$1` for convenience.
 
 ### Directory Layout
 
-The canonical location is `.agents/skills/pr-review/`. Both Claude Code
+The canonical location is `.agents/skills/aster-pr-review/`. Both Claude Code
 and Codex discover skills from `.agents/skills/` at the repo root.
 
 Claude Code additionally scans `.claude/skills/`. To keep a single source
@@ -718,7 +718,7 @@ of truth, `.claude/skills` is a symlink:
 ```
 .agents/
   skills/
-    pr-review/
+    aster-pr-review/
       SKILL.md              # Skill prompt (the source of truth)
       spec.md               # This specification (supporting file)
       scripts/
@@ -727,14 +727,14 @@ of truth, `.claude/skills` is a symlink:
 .claude/skills -> ../.agents/skills    # Symlink for Claude Code
 ```
 
-The `name` field in frontmatter must match the directory name (`pr-review`),
+The `name` field in frontmatter must match the directory name (`aster-pr-review`),
 as required by the standard.
 
 ### SKILL.md Frontmatter
 
 ```yaml
 ---
-name: pr-review
+name: aster-pr-review
 description: >
   Generate and submit GitHub PR code reviews. Use when the user wants
   to review a pull request, generate review comments, or submit review
@@ -753,7 +753,7 @@ Key settings:
   use it. Must be under 1024 characters.
 - **`compatibility`** (standard): Documents that `gh` and `git` are required.
 - **`disable-model-invocation`** (Claude Code): Only the user can trigger
-  this skill via `/pr-review`. The agent should never auto-invoke a review.
+  this skill via `/aster-pr-review`. The agent should never auto-invoke a review.
 - **`allowed-tools`** (Claude Code): Pre-approves the tools needed so the
   user is not prompted repeatedly during review generation or submission.
 - **`argument-hint`** (Claude Code): Shows `<new|submit|redo|delete> <pr_number_or_url>`
@@ -780,11 +780,11 @@ PR: $1
 
 Examples of user invocation:
 ```
-/pr-review new 2887
-/pr-review new https://github.com/asterinas/asterinas/pull/2887
-/pr-review submit 2887
-/pr-review redo 2887
-/pr-review delete 2887
+/aster-pr-review new 2887
+/aster-pr-review new https://github.com/asterinas/asterinas/pull/2887
+/aster-pr-review submit 2887
+/aster-pr-review redo 2887
+/aster-pr-review delete 2887
 ```
 
 ### Supporting Files

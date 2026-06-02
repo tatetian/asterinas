@@ -1,5 +1,5 @@
 ---
-name: pr-review
+name: aster-pr-review
 description: >
   Generate and submit GitHub PR code reviews. Use when the user wants
   to review a pull request, generate review comments, or submit review
@@ -330,7 +330,7 @@ and refuses to submit if anything is invalid.
 ### Step 9: Report to user
 
 Print the path to the generated file and how many comments were generated.
-Tell the user they can edit the file and then run `/pr-review submit <N>`
+Tell the user they can edit the file and then run `/aster-pr-review submit <N>`
 when ready.
 
 ---
@@ -350,7 +350,7 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 
 Read `$REPO_ROOT/pr_reviews/<N>.md` (this is a symlink to the latest
 review file). If it does not exist, tell the user to run
-`/pr-review new <N>` first.
+`/aster-pr-review new <N>` first.
 
 ### Step 3: Parse the file
 
@@ -376,7 +376,7 @@ gh pr view <N> --json headRefOid -q .headRefOid
 Compare the result against `head_sha` from frontmatter. If they differ,
 **refuse to submit**. Tell the user:
 > The PR has been updated since this review was generated.
-> Run `/pr-review redo <N>` to generate a follow-up review.
+> Run `/aster-pr-review redo <N>` to generate a follow-up review.
 
 ### Step 5: Submit via GitHub API
 
@@ -489,7 +489,7 @@ Print:
 - Number of new issues found
 - Total comment count in the new review
 
-Tell the user they can edit the file and then run `/pr-review submit <N>`
+Tell the user they can edit the file and then run `/aster-pr-review submit <N>`
 when ready. If the review is clean (no unresolved or new issues), suggest
 approving the PR on GitHub.
 
