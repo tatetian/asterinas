@@ -132,12 +132,6 @@ impl UserContext {
         self.tp()
     }
 
-    /// Activates the thread-local storage pointer for the current task.
-    pub fn activate_tls_pointer(&self) {
-        // In LoongArch, `tp` will be loaded at `UserContext::execute`, so it does not need to be
-        // activated in advance.
-    }
-
     /// Enables floating-point unit.
     pub fn enable_fpu(&mut self) {
         self.user_context.euen = 0x1;

@@ -33,7 +33,7 @@ fn pre_schedule_handler() {
         return;
     };
 
-    thread_local.fpu().before_schedule();
+    thread_local.supp_user_context().before_schedule();
 }
 
 fn post_schedule_handler() {
@@ -53,7 +53,7 @@ fn post_schedule_handler() {
         vmar.vm_space().activate()
     }
 
-    thread_local.fpu().after_schedule();
+    thread_local.supp_user_context().after_schedule();
 }
 
 pub(super) fn init() {
