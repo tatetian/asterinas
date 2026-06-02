@@ -15,6 +15,10 @@ set -e
 
 ./cpu_affinity/cpu_affinity
 
+if [ "$(uname -m)" = "x86_64" ]; then
+    ./arch_prctl/fsgsbase
+fi
+
 ./execve/execve
 ./execve/execve_comm
 ./execve/execve_err

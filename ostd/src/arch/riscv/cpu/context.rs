@@ -170,12 +170,6 @@ impl UserContext {
     pub fn tls_pointer(&self) -> usize {
         self.tp()
     }
-
-    /// Activates the thread-local storage pointer for the current task.
-    pub fn activate_tls_pointer(&self) {
-        // In RISC-V, `tp` will be loaded at `UserContext::execute`, so it does not need to be
-        // activated in advance.
-    }
 }
 
 impl UserContextApiInternal for UserContext {

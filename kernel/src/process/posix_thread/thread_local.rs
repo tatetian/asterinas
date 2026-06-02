@@ -2,6 +2,8 @@
 
 use core::cell::{Cell, Ref, RefCell, RefMut};
 
+#[cfg(target_arch = "x86_64")]
+use ostd::arch::cpu::context::X86TlsRegs;
 use ostd::{arch::cpu::context::FpuContext, sync::RwArc, task::CurrentTask};
 
 use super::RobustListHead;
@@ -36,9 +38,8 @@ pub struct ThreadLocal {
     /// File system.
     fs: RefCell<Arc<ThreadFsInfo>>,
 
-    // User FPU context.
-    fpu_context: RefCell<FpuContext>,
-    fpu_state: Cell<FpuState>,
+    // Supplementary userspace CPU context.
+    supp_user_context: SuppUserContext,
 
     // Signal.
     /// Stack address, size, and flags for the signal handler.
@@ -63,7 +64,7 @@ impl ThreadLocal {
         vmar: VmarHandle,
         file_table: RwArc<FileTable>,
         fs: Arc<ThreadFsInfo>,
-        fpu_context: FpuContext,
+        supp_user_context: SuppUserContext,
         user_ns: Arc<UserNamespace>,
         ns_proxy: Arc<NsProxy>,
     ) -> Self {
@@ -75,8 +76,7 @@ impl ThreadLocal {
             robust_list: RefCell::new(None),
             file_table: RefCell::new(Some(file_table)),
             fs: RefCell::new(fs),
-            fpu_context: RefCell::new(fpu_context),
-            fpu_state: Cell::new(FpuState::Unloaded),
+            supp_user_context,
             sig_stack: RefCell::new(SigStack::default()),
             sig_mask_saved: Cell::new(None),
             orig_syscall_ret: Cell::new(None),
@@ -162,8 +162,8 @@ impl ThreadLocal {
         Arc::strong_count(&self.fs.borrow()) > 2
     }
 
-    pub fn fpu(&self) -> ThreadFpu<'_> {
-        ThreadFpu(self)
+    pub fn supp_user_context(&self) -> ThreadSuppUserContext<'_> {
+        ThreadSuppUserContext(&self.supp_user_context)
     }
 
     pub fn sig_stack(&self) -> &RefCell<SigStack> {
@@ -199,19 +199,88 @@ impl ThreadLocal {
     }
 }
 
-/// The current state of `ThreadFpu`.
+/// The current thread's supplementary userspace CPU context.
 ///
-/// - `Activated`: The FPU context is currently loaded onto the CPU and it must be loaded
-///   while the associated task is running. If preemption occurs in between, the context switch
-///   must load FPU context again.
-/// - `Loaded`: The FPU context is currently loaded onto the CPU. It may or may not still
-///   be loaded in CPU after a context switch.
-/// - `Unloaded`: The FPU context is not currently loaded onto the CPU.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-enum FpuState {
-    Activated,
-    Loaded,
-    Unloaded,
+/// This struct provides access to the current thread's [`SuppUserContext`].
+pub struct ThreadSuppUserContext<'a>(&'a SuppUserContext);
+
+impl<'a> ThreadSuppUserContext<'a> {
+    pub fn fpu(&self) -> ThreadFpu<'a> {
+        ThreadFpu(self.0)
+    }
+
+    #[cfg(target_arch = "x86_64")]
+    pub fn x86_tls_regs(&self) -> ThreadX86TlsRegs<'a> {
+        ThreadX86TlsRegs(&self.0.x86_tls_regs)
+    }
+
+    pub fn before_schedule(&self) {
+        #[cfg(target_arch = "x86_64")]
+        self.0.x86_tls_regs.borrow_mut().save();
+
+        self.0.fpu_context.borrow_mut().save();
+    }
+
+    pub fn after_schedule(&self) {
+        #[cfg(target_arch = "x86_64")]
+        self.0.x86_tls_regs.borrow().load();
+
+        self.0.fpu_context.borrow_mut().load();
+    }
+}
+
+/// Supplementary userspace CPU context.
+///
+/// # `UserContext` vs `SuppUserContext`.
+///
+/// The entire userspace CPU state is split into two structs:
+/// `UserContext` and `SuppUserContext`.
+/// `UserContext` is a set of essential CPU registers,
+/// including the general-purpose ones,
+/// that are used by the kernel as well.
+/// Thus, to avoid conflicts between the userspace and kernel space use,
+/// `UserContext` has to be saved/restored _eagerly_ upon every exit/enter from/to the userspace.
+/// For best performance,
+/// the number of registers in `UserContext` is kept as small as possible.
+///
+/// In contrast,
+/// `SuppUserContext` is a set of supplementary CPU registers,
+/// such as FPU registers,
+/// that are modifiable by the userspace
+/// but might or might not be used in the kernel space.
+/// As such,
+/// the saving and restoring of `SuppUserContext` can be delayed to
+/// the point of context switching,
+/// when saving and restoring are unavoidable.
+///
+/// In conclusion,
+/// dividing userspace CPU states into `UserContext` and `SuppUserContext`
+/// allows for better performance.
+pub struct SuppUserContext {
+    fpu_context: RefCell<FpuContext>,
+    #[cfg(target_arch = "x86_64")]
+    x86_tls_regs: RefCell<X86TlsRegs>,
+}
+
+impl SuppUserContext {
+    pub fn new() -> Self {
+        Self {
+            fpu_context: RefCell::new(FpuContext::new()),
+            #[cfg(target_arch = "x86_64")]
+            x86_tls_regs: RefCell::new(X86TlsRegs::new()),
+        }
+    }
+
+    pub fn with_fpu_context(mut self, ctx: FpuContext) -> Self {
+        self.fpu_context = RefCell::new(ctx);
+        self
+    }
+
+    #[cfg(target_arch = "x86_64")]
+    pub fn with_x86_tls_regs(mut self, regs: X86TlsRegs) -> Self {
+        self.x86_tls_regs = RefCell::new(regs);
+        self
+    }
 }
 
 /// The FPU information for the _current_ thread.
@@ -231,57 +300,70 @@ enum FpuState {
 ///
 /// Therefore, we omit the preemption guards for better performance and
 /// defer preemption considerations to future work.
-pub struct ThreadFpu<'a>(&'a ThreadLocal);
+pub struct ThreadFpu<'a>(&'a SuppUserContext);
 
 impl ThreadFpu<'_> {
-    pub fn activate(&self) {
-        match self.0.fpu_state.get() {
-            FpuState::Activated => return,
-            FpuState::Loaded => (),
-            FpuState::Unloaded => self.0.fpu_context.borrow_mut().load(),
-        }
-        self.0.fpu_state.set(FpuState::Activated);
-    }
-
-    pub fn deactivate(&self) {
-        if self.0.fpu_state.get() == FpuState::Activated {
-            self.0.fpu_state.set(FpuState::Loaded);
-        }
-    }
-
-    pub fn clone_context(&self) -> FpuContext {
-        match self.0.fpu_state.get() {
-            FpuState::Activated | FpuState::Loaded => {
-                let mut fpu_context = self.0.fpu_context.borrow_mut();
-                fpu_context.save();
-                fpu_context.clone()
-            }
-            FpuState::Unloaded => self.0.fpu_context.borrow().clone(),
-        }
-    }
-
+    /// Replaces the FPU context and loads it onto the CPU.
     pub fn set_context(&self, context: FpuContext) {
-        let _ = self.0.fpu_context.replace(context);
-        self.0.fpu_state.set(FpuState::Unloaded);
+        let mut fpu = self.0.fpu_context.borrow_mut();
+        *fpu = context;
+        fpu.load();
     }
 
-    pub fn before_schedule(&self) {
-        match self.0.fpu_state.get() {
-            FpuState::Activated => {
-                self.0.fpu_context.borrow_mut().save();
-            }
-            FpuState::Loaded => {
-                self.0.fpu_context.borrow_mut().save();
-                self.0.fpu_state.set(FpuState::Unloaded);
-            }
-            FpuState::Unloaded => (),
-        }
+    /// Saves the current CPU FPU state and returns a clone.
+    pub fn clone_context(&self) -> FpuContext {
+        let mut fpu_context = self.0.fpu_context.borrow_mut();
+        fpu_context.save();
+        fpu_context.clone()
+    }
+}
+
+#[cfg(target_arch = "x86_64")]
+/// The current thread's x86 TLS registers.
+pub struct ThreadX86TlsRegs<'a>(&'a RefCell<X86TlsRegs>);
+
+#[cfg(target_arch = "x86_64")]
+impl ThreadX86TlsRegs<'_> {
+    /// Replaces the register values and loads them onto the CPU.
+    pub fn set_regs(&self, new_regs: X86TlsRegs) {
+        let mut regs = self.0.borrow_mut();
+        *regs = new_regs;
+        regs.load();
     }
 
-    pub fn after_schedule(&self) {
-        if self.0.fpu_state.get() == FpuState::Activated {
-            self.0.fpu_context.borrow_mut().load();
-        }
+    /// Saves both FS/GS base from CPU and returns a copy.
+    pub fn clone_regs(&self) -> X86TlsRegs {
+        let mut regs = self.0.borrow_mut();
+        regs.save();
+        *regs
+    }
+
+    /// Saves the FS base from the CPU and returns it.
+    pub fn get_fs_base(&self) -> usize {
+        let mut regs = self.0.borrow_mut();
+        regs.save_fs_base();
+        regs.fsbase()
+    }
+
+    /// Sets the FS base and loads it into the CPU.
+    pub fn set_fs_base(&self, fsbase: usize) {
+        let mut regs = self.0.borrow_mut();
+        regs.set_fsbase(fsbase);
+        regs.load_fs_base();
+    }
+
+    /// Saves the GS base from the CPU and returns it.
+    pub fn get_gs_base(&self) -> usize {
+        let mut regs = self.0.borrow_mut();
+        regs.save_gs_base();
+        regs.gsbase()
+    }
+
+    /// Sets the GS base and loads it into the CPU.
+    pub fn set_gs_base(&self, gsbase: usize) {
+        let mut regs = self.0.borrow_mut();
+        regs.set_gsbase(gsbase);
+        regs.load_gs_base();
     }
 }
 

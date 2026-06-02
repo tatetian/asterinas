@@ -9,11 +9,15 @@ use bitflags::bitflags;
 use cfg_if::cfg_if;
 use ostd_pod::{FromZeros, IntoBytes};
 use spin::Once;
-use x86::bits64::segmentation::wrfsbase;
-use x86_64::registers::{
-    control::{Cr0, Cr0Flags},
-    rflags::RFlags,
-    xcontrol::XCr0,
+use x86::bits64::segmentation::{rdfsbase, wrfsbase};
+use x86_64::{
+    VirtAddr,
+    registers::{
+        control::{Cr0, Cr0Flags},
+        model_specific::KernelGsBase,
+        rflags::RFlags,
+        xcontrol::XCr0,
+    },
 };
 
 use crate::{
@@ -67,8 +71,100 @@ pub struct GeneralRegs {
     pub r15: usize,
     pub rip: usize,
     pub rflags: usize,
-    pub fsbase: usize,
-    pub gsbase: usize,
+}
+
+/// Thread Local Storage (TLS) Registers on x86-64.
+///
+/// Unlike most CPU architectures,
+/// x86 has two registers that point to the base addresses of TLS storage:
+/// `FSBASE` and `GSBASE`.
+/// Their uses in the user and kernel spaces are summarized in the table below:
+///
+/// |              | FSBASE                    | GSBASE                    |
+/// | ------------ | ------------------------- | ------------------------- |
+/// | Userspace    | Thread-local data pointer | (Optional) App-controlled |
+/// | Kernel space | None                      | CPU-local data pointer    |
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct X86TlsRegs {
+    fsbase: usize,
+    gsbase: usize,
+}
+
+impl X86TlsRegs {
+    /// Returns the initial TLS registers.
+    pub fn new() -> Self {
+        Self {
+            fsbase: 0,
+            gsbase: 0,
+        }
+    }
+
+    /// Gets the userspace FS base.
+    pub fn fsbase(&self) -> usize {
+        self.fsbase
+    }
+
+    /// Sets the userspace FS base.
+    pub fn set_fsbase(&mut self, fsbase: usize) {
+        self.fsbase = fsbase;
+    }
+
+    /// Gets the userspace GS base.
+    pub fn gsbase(&self) -> usize {
+        self.gsbase
+    }
+
+    /// Sets the userspace GS base.
+    pub fn set_gsbase(&mut self, gsbase: usize) {
+        self.gsbase = gsbase;
+    }
+
+    /// Saves both FS and GS base values from the CPU into this struct.
+    pub fn save(&mut self) {
+        self.save_fs_base();
+        self.save_gs_base();
+    }
+
+    /// Saves the FS base from the CPU into this struct.
+    pub fn save_fs_base(&mut self) {
+        // SAFETY: Reading the user FS base does not affect kernel code.
+        self.fsbase = unsafe { rdfsbase() as usize };
+    }
+
+    /// Saves the GS base from the CPU into this struct.
+    pub fn save_gs_base(&mut self) {
+        // On x86-64, the kernel runs with its own `gsbase` and returns to user mode via `swapgs`.
+        // Therefore the user `gsbase` is staged in `IA32_KERNEL_GS_BASE` while the kernel is
+        // running, so it must be read back from there.
+        // Do not use `swapgs` + `rdgsbase` + `swapgs` here: this method can be called with
+        // interrupts enabled, and an interrupt between the `swapgs` instructions would run with
+        // the user GS base instead of the kernel GS base.
+        self.gsbase = KernelGsBase::read().as_u64() as usize;
+    }
+
+    /// Loads both FS and GS base values from this struct onto the CPU.
+    pub fn load(&self) {
+        self.load_fs_base();
+        self.load_gs_base();
+    }
+
+    /// Loads the FS base from this struct onto the CPU.
+    pub fn load_fs_base(&self) {
+        // SAFETY: Writing `fsbase` won't affect kernel code.
+        unsafe { wrfsbase(self.fsbase as u64) }
+    }
+
+    /// Loads the GS base from this struct onto the CPU.
+    pub fn load_gs_base(&self) {
+        // On x86-64, the kernel runs with its own `gsbase` and returns to user mode via `swapgs`.
+        // Therefore the user `gsbase` must be staged in `IA32_KERNEL_GS_BASE` while the kernel is
+        // running.
+        // Do not use `swapgs` + `wrgsbase` + `swapgs` here: this method can be called with
+        // interrupts enabled, and an interrupt between the `swapgs` instructions would run with
+        // the user GS base instead of the kernel GS base.
+        KernelGsBase::write(VirtAddr::new(self.gsbase as u64));
+    }
 }
 
 /// Architectural CPU exceptions (x86-64 vectors 0-31).
@@ -235,29 +331,6 @@ impl UserContext {
     pub fn take_exception(&mut self) -> Option<CpuException> {
         self.exception.take()
     }
-
-    /// Sets the thread-local storage pointer.
-    pub fn set_tls_pointer(&mut self, tls: usize) {
-        self.set_fsbase(tls)
-    }
-
-    /// Gets the thread-local storage pointer.
-    pub fn tls_pointer(&self) -> usize {
-        self.fsbase()
-    }
-
-    /// Activates the thread-local storage pointer for the current task.
-    ///
-    /// The method by itself is safe because the value of the TLS register won't affect kernel code.
-    /// But if the user program relies on the TLS pointer, make sure that the pointer is correctly
-    /// set when entering the user space.
-    pub fn activate_tls_pointer(&self) {
-        // In x86, context switching preserves `fsbase`, but `fsbase` won't be loaded at
-        // `UserContext::execute`, so it must be activated in advance.
-        //
-        // SAFETY: Setting `fsbase` won't affect kernel code.
-        unsafe { wrfsbase(self.fsbase() as u64) }
-    }
 }
 
 impl UserContextApiInternal for UserContext {
@@ -337,7 +410,6 @@ impl UserContextApiInternal for UserContext {
             r13: self.user_context.general.r13,
             r14: self.user_context.general.r14,
             r15: self.user_context.general.r15,
-            _pad: 0,
             trap_num: self.user_context.trap_num,
             error_code: self.user_context.error_code,
             rip: self.user_context.general.rip,
@@ -488,9 +560,7 @@ cpu_context_impl_getter_setter!(
     [r14, set_r14],
     [r15, set_r15],
     [rip, set_rip],
-    [rflags, set_rflags],
-    [fsbase, set_fsbase],
-    [gsbase, set_gsbase]
+    [rflags, set_rflags]
 );
 
 /// The FPU context of user task.
