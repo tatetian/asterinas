@@ -95,18 +95,29 @@ jobs:
           git remote add base-repo "https://github.com/${{ github.repository }}.git"
           git fetch base-repo "${{ steps.pr_info.outputs.base_ref }}"
 
-      # Always fetch the schema from the upstream at the workflow commit so
-      # it matches the workflow version. The PR checkout won't have it if the
-      # branch predates the file, and fork PRs should not supply their own.
-      - name: Fetch Codex output schema from upstream
+      # Always fetch the schema and the aster-pr-review skill scripts from
+      # the workflow's commit, not the PR checkout. The PR branch may predate
+      # these files, and fork PRs should not supply their own.
+      - name: Fetch Codex schema and skill scripts from upstream
         env:
           GH_TOKEN: ${{ github.token }}
           REPOSITORY: ${{ github.repository }}
+          WORKFLOW_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          mkdir -p .github
-          gh api "repos/${REPOSITORY}/contents/.github/codex-output-schema.json?ref=${{ github.sha }}" \
-            --jq '.content' | base64 -d > .github/codex-output-schema.json
+          fetch() {
+            local dest="$1"
+            mkdir -p "$(dirname "$dest")"
+            gh api "repos/${REPOSITORY}/contents/${dest}?ref=${WORKFLOW_SHA}" \
+              --jq '.content' | base64 -d > "$dest"
+          }
+          fetch .github/codex-output-schema.json
+          fetch .agents/skills/aster-pr-review/scripts/submit_review.sh
+          fetch .agents/skills/aster-pr-review/scripts/validate_review.py
+          fetch .agents/skills/aster-pr-review/scripts/from_codex_json.py
+          chmod +x .agents/skills/aster-pr-review/scripts/submit_review.sh
+          chmod +x .agents/skills/aster-pr-review/scripts/validate_review.py
+          chmod +x .agents/skills/aster-pr-review/scripts/from_codex_json.py
 
       - name: Build prompt
         env:
@@ -117,24 +128,23 @@ jobs:
           PR_BODY: ${{ steps.pr_info.outputs.body }}
         run: |
           cat > codex-prompt.md <<'PROMPT_HEADER'
-          You are acting as a reviewer for a proposed code change made by another engineer.
-          Focus on issues that impact correctness, performance, security, maintainability, or developer experience.
+          You are reviewing a pull request for the Asterinas kernel. Produce structured findings per the output schema, plus a `summary` covering cross-cutting themes.
 
-          Flag only actionable issues introduced by the pull request.
-          When you flag an issue, provide a short, direct explanation and cite the affected file and line range.
-          For issues that violate coding guidelines (book/src/to-contribute/coding-guidelines/README.md),
-          cite the corresponding guideline with a hyperlink. To build the link, take the relative
-          path from the Index table in README.md (e.g., "rust-guidelines/language-items/functions-and-methods.md#small-functions")
-          and prepend "https://asterinas.github.io/book/to-contribute/coding-guidelines/" to get the
-          full URL (e.g., "https://asterinas.github.io/book/to-contribute/coding-guidelines/rust-guidelines/language-items/functions-and-methods.html#small-functions").
-          Note: replace ".md" with ".html" in the final URL.
+          Cover three zoom levels (you do not need to label them — just make sure issues at each level are surfaced when they exist):
 
-          Prioritize severe issues.
-          Only give nit-level comments when there are no severe issues.
+          * Design (macro): architecture, API surface clarity, type safety, module boundaries, whether new pieces fit the existing structure, and overarching design principles (single responsibility, DRY, information hiding, least surprise, loose coupling, consistency).
+          * Correctness (meso): logical bugs, off-by-one errors, error-handling gaps, race conditions, lock ordering, atomic-ordering pairing, Linux ABI / behavioral conformance when the PR touches a syscall, /proc, /sys, or other Linux-facing surface, and test-coverage adequacy.
+          * Craft (micro): naming, consistency in style and patterns across the diff, unnecessary clones/heap allocations/atomic ops on hot paths, and conformance to the coding guidelines in book/src/to-contribute/coding-guidelines/. For each guideline citation, build a hyperlink: take the guideline's relative path from the Index in README.md (e.g., "rust-guidelines/language-items/functions-and-methods.md#small-functions") and prepend "https://asterinas.github.io/book/to-contribute/coding-guidelines/", replacing the trailing .md with .html.
 
-          After listing findings, provide an overall summary that lists the issues that must be addressed.
-          Ensure that file citations and line numbers are exactly correct using the tools available; if they are incorrect your comments will be rejected.
-          For code_location.absolute_file_path, use repository-relative paths (e.g., "src/main.rs"), NOT absolute filesystem paths (e.g., "/home/runner/work/...").
+          Output rules (these are MANDATORY — violations cause findings to be dropped on submit):
+
+          * One finding per root cause. If several symptoms share one underlying bug or design flaw, file ONE finding that names the root cause and gives the single fix that resolves all of them; cross-reference the other symptom lines in the body rather than filing per-symptom comments.
+          * Each finding's `body` should end with a concrete fix: a diff, a code snippet, a one-liner command, or a specific API / flag to use. Only omit a fix when the issue requires design discussion first — and say so explicitly ("No fix suggested: this needs a design decision on X.").
+          * Each finding's `priority`: 0 = blocker (must fix before merge), 1 = significant (should fix), 2 = minor (style or low-impact). Prefer fewer, higher-signal findings; only include minor-priority findings when there are no significant ones.
+          * `code_location.line_range` MUST point to lines that are part of the PR's unified diff on the RIGHT side (i.e., added lines or context lines around them). Pre-existing lines that the PR did not touch are NOT anchorable — anchoring there causes GitHub to silently drop the comment. If you need to call out pre-existing code, re-anchor to a related diff line and describe the pre-existing problem in the body.
+          * `code_location.absolute_file_path`: use repository-relative paths (e.g., "kernel/src/foo.rs"), NOT absolute filesystem paths (e.g., "/home/runner/work/...").
+
+          After listing findings, write the `summary`: synthesize cross-cutting themes, what the PR does well, the top 2-3 issues that need attention, and any structural recommendations. Do not bullet-list every finding — the findings array already does that.
           PROMPT_HEADER
 
           {
@@ -173,108 +183,52 @@ jobs:
           output-file: codex-output.json
           sandbox: read-only
 
-      - name: Post review comments
+      # The Codex output is routed through the aster-pr-review skill's
+      # pipeline: from_codex_json.py converts the structured JSON to the
+      # skill's markdown review format (filtering findings whose lines fall
+      # outside the diff), and submit_review.sh posts the review via
+      # GraphQL and finalizes it as a COMMENT.
+      - name: Generate PR diff for anchor filtering
         env:
-          GH_TOKEN: ${{ github.token }}
+          BASE_SHA: ${{ steps.pr_info.outputs.base_sha }}
           HEAD_SHA: ${{ steps.pr_info.outputs.head_sha }}
-          PR_NUMBER: ${{ steps.pr_info.outputs.pr_number }}
+        run: git --no-pager diff "${BASE_SHA}...${HEAD_SHA}" > pr.diff
+
+      - name: Convert Codex JSON to skill review markdown
+        env:
           REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.pr_info.outputs.pr_number }}
+          HEAD_SHA: ${{ steps.pr_info.outputs.head_sha }}
+          PR_TITLE: ${{ steps.pr_info.outputs.title }}
         run: |
+          set -euo pipefail
           if [ ! -f codex-output.json ]; then
-            echo "No Codex output found, skipping."
+            echo "No Codex output found, nothing to submit."
             exit 0
           fi
-
-          # Validate that the output is well-formed JSON with required fields
           if ! jq -e '.findings and .summary' codex-output.json > /dev/null 2>&1; then
             echo "Codex output is missing required fields or is invalid JSON, skipping."
             exit 0
           fi
+          python3 .agents/skills/aster-pr-review/scripts/from_codex_json.py \
+            --codex-json codex-output.json \
+            --pr "${PR_NUMBER}" \
+            --repo "${REPOSITORY}" \
+            --head-sha "${HEAD_SHA}" \
+            --workspace "${GITHUB_WORKSPACE}" \
+            --title "${PR_TITLE}" \
+            --event comment \
+            --diff pr.diff \
+            --attribution "## Reviews by Codex" \
+            > review.md
+          echo "=== Generated review.md ==="
+          cat review.md
 
-          # Workspace prefix to strip from absolute paths
-          WORKSPACE="${GITHUB_WORKSPACE}/"
-          MAX_FINDINGS=50
-
-          # Build overall summary body for the review (using jq to avoid shell expansion issues)
-          # Truncate to 60000 chars to stay within GitHub's comment size limit
-          REVIEW_BODY=$(jq -r '"## Reviews by Codex\n\n" + (.summary | .[0:60000])' codex-output.json)
-
-          # Build a single PR review payload with summary + batched inline comments.
-          # Normalize paths: strip workspace prefix, strip leading "./", skip
-          # absolute paths outside the workspace.
-          jq -c \
-            --arg commit "$HEAD_SHA" \
-            --arg ws "$WORKSPACE" \
-            --arg body "$REVIEW_BODY" \
-            --argjson max "$MAX_FINDINGS" \
-            '{
-              event: "COMMENT",
-              commit_id: $commit,
-              body: $body,
-              comments: (
-                .findings
-                | .[0:$max]
-                | map(
-                    .code_location.absolute_file_path as $abs
-                    | (
-                        if ($abs | startswith($ws)) then ($abs | ltrimstr($ws))
-                        elif ($abs | startswith("./")) then ($abs | ltrimstr("./"))
-                        elif ($abs | startswith("/")) then null
-                        else $abs
-                        end
-                      ) as $rel
-                    | select($rel != null)
-                    | {
-                        body: (("**" + .title + "**\n\n" + .body + "\n\n_Confidence: " +
-                               (.confidence_score | tostring) + " | Priority: P" +
-                               (.priority | tostring) + "_") | .[0:65000]),
-                        path: $rel,
-                        line: .code_location.line_range.end,
-                        side: "RIGHT",
-                        start_line: (if .code_location.line_range.start != .code_location.line_range.end
-                                     then .code_location.line_range.start else null end),
-                        start_side: (if .code_location.line_range.start != .code_location.line_range.end
-                                     then "RIGHT" else null end)
-                      }
-                    | with_entries(select(.value != null))
-                  )
-              )
-            }' codex-output.json > review-payload.json
-
-          # Post the review (summary + inline comments in one API call)
-          num_comments=$(jq '.comments | length' review-payload.json)
-          echo "Posting review with ${num_comments} inline comment(s)..."
-          if ! gh api \
-            "repos/${REPOSITORY}/pulls/${PR_NUMBER}/reviews" \
-            --method POST \
-            --input review-payload.json; then
-            echo "Warning: batched review failed. Falling back to summary + individual comments..."
-
-            # Post the summary as a review without inline comments
-            jq -c '{event: "COMMENT", commit_id: .commit_id, body: .body, comments: []}' \
-              review-payload.json > review-summary-only.json
-            gh api \
-              "repos/${REPOSITORY}/pulls/${PR_NUMBER}/reviews" \
-              --method POST \
-              --input review-summary-only.json || echo "Error: failed to post summary review."
-
-            # Try each inline comment individually via the single-comment API
-            posted=0
-            failed=0
-            for i in $(seq 0 $((num_comments - 1))); do
-              jq -c --argjson idx "$i" \
-                --arg commit "$HEAD_SHA" \
-                '.comments[$idx] + {commit_id: $commit}' \
-                review-payload.json > "comment-${i}.json"
-              if gh api \
-                "repos/${REPOSITORY}/pulls/${PR_NUMBER}/comments" \
-                --method POST \
-                --input "comment-${i}.json" > /dev/null 2>&1; then
-                posted=$((posted + 1))
-              else
-                failed=$((failed + 1))
-                echo "Warning: failed to post inline comment #${i} ($(jq -r --argjson idx "$i" '.comments[$idx].path' review-payload.json))"
-              fi
-            done
-            echo "Individual comments: ${posted} posted, ${failed} failed."
-          fi
+      - name: Submit review to GitHub
+        if: hashFiles('review.md') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          bash .agents/skills/aster-pr-review/scripts/submit_review.sh \
+            --finalize review.md

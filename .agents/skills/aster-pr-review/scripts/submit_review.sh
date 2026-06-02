@@ -12,12 +12,44 @@
 
 set -euo pipefail
 
-if [ $# -ne 1 ]; then
-    echo "Usage: $0 <path_to_reviews.md>"
+FINALIZE=0
+REVIEWS_FILE=""
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --finalize)
+            FINALIZE=1
+            shift
+            ;;
+        -h|--help)
+            echo "Usage: $0 [--finalize] <path_to_reviews.md>"
+            echo ""
+            echo "  --finalize  After posting comments, submit the review using the"
+            echo "              'event' field from the review frontmatter (comment /"
+            echo "              approve / request_changes). Without this flag the"
+            echo "              review is left in PENDING state for human finalization."
+            exit 0
+            ;;
+        -*)
+            echo "Error: Unknown option: $1"
+            echo "Usage: $0 [--finalize] <path_to_reviews.md>"
+            exit 1
+            ;;
+        *)
+            if [ -n "$REVIEWS_FILE" ]; then
+                echo "Error: Unexpected argument: $1"
+                exit 1
+            fi
+            REVIEWS_FILE="$1"
+            shift
+            ;;
+    esac
+done
+
+if [ -z "$REVIEWS_FILE" ]; then
+    echo "Usage: $0 [--finalize] <path_to_reviews.md>"
     exit 1
 fi
-
-REVIEWS_FILE="$1"
 
 if [ ! -f "$REVIEWS_FILE" ]; then
     echo "Error: $REVIEWS_FILE not found."
@@ -546,14 +578,53 @@ for m in json.load(sys.stdin)['missing']:
     fi
 fi
 
+# --- Finalize the review (if --finalize was passed) ---
+# Without --finalize the review stays PENDING for a human to submit on
+# GitHub. With --finalize the script submits the review using the event
+# field from the frontmatter (mapped to API_EVENT earlier). This is meant
+# for non-interactive use cases (CI, scheduled bots) where there's no
+# human waiting to click "Submit review".
+FINAL_STATE="PENDING"
+if [ "$FINALIZE" -eq 1 ]; then
+    echo ""
+    echo "Finalizing review with event: $API_EVENT..."
+    SUBMIT_RESP=$(gh api graphql -f query="mutation {
+        submitPullRequestReview(input: {
+            pullRequestReviewId: \"$REVIEW_NODE_ID\",
+            event: $API_EVENT
+        }) { pullRequestReview { state } }
+    }" 2>&1) && {
+        FINAL_STATE=$(echo "$SUBMIT_RESP" | python3 -c "
+import sys, json
+try:
+    print(json.load(sys.stdin)['data']['submitPullRequestReview']['pullRequestReview']['state'])
+except Exception:
+    print('UNKNOWN')
+")
+        echo "  Final state: $FINAL_STATE"
+    } || {
+        echo "  Error: Could not finalize review. It remains in PENDING state."
+        echo "  $SUBMIT_RESP"
+        echo ""
+        echo "  Finalize manually on GitHub:"
+        echo "    https://github.com/$REPO/pull/$PR_NUMBER"
+        exit 1
+    }
+fi
+
 echo ""
 echo "Review submitted successfully (review ID: $REVIEW_ID)"
-echo "  State: PENDING"
+echo "  State: $FINAL_STATE"
 echo ""
-echo "Go to GitHub to finalize the review:"
-echo "  https://github.com/$REPO/pull/$PR_NUMBER"
-echo ""
-echo "The review is in PENDING state. On GitHub you can:"
-echo "  - Add more comments"
-echo "  - Edit existing comments"
-echo "  - Submit as: Comment, Approve, or Request Changes"
+if [ "$FINAL_STATE" = "PENDING" ]; then
+    echo "Go to GitHub to finalize the review:"
+    echo "  https://github.com/$REPO/pull/$PR_NUMBER"
+    echo ""
+    echo "The review is in PENDING state. On GitHub you can:"
+    echo "  - Add more comments"
+    echo "  - Edit existing comments"
+    echo "  - Submit as: Comment, Approve, or Request Changes"
+else
+    echo "View the review on GitHub:"
+    echo "  https://github.com/$REPO/pull/$PR_NUMBER"
+fi
