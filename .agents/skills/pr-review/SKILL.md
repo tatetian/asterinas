@@ -99,7 +99,10 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/validate_review.py \
     --emit-valid-lines > /tmp/pr_<N>_valid_lines.json
 ```
 
-The resulting JSON looks like `{"path/to/file.rs": [1, 2, 3, ...], ...}`.
+The resulting JSON maps each path to a list of inclusive `[start, end]`
+ranges of anchorable RIGHT-side lines, e.g.
+`{"path/to/file.rs": [[42, 58], [73, 89]], ...}`. A line `N` is anchorable
+for a file iff some range `[s, e]` in its list satisfies `s <= N <= e`.
 Pass this file path to every sub-agent (Step 7b) and the verifier (Step 7e)
 so they can check anchors before assigning them.
 
@@ -134,9 +137,12 @@ comments as text in its response.
 
 **Anchoring rule (mandatory)**: before assigning a `line N` to any heading,
 the sub-agent must check `/tmp/pr_<N>_valid_lines.json` and confirm that
-`N` is in the list for that path. If the issue is on a pre-existing line
-that this PR didn't modify, choose ONE of these escapes — never anchor
-to a line outside the map:
+`N` is in the list for that path. Never anchor to a line outside the map —
+GitHub will silently drop the comment. The escape depends on whether the
+file appears in the PR's diff at all:
+
+*Case A — file IS in the diff, but the issue is on a pre-existing line
+this PR didn't modify.* Choose ONE:
 1. **Re-anchor** to a nearby line that IS in the map (e.g., a newly added
    line that introduces or interacts with the issue), and explain in the
    comment body which other (pre-existing) lines also need fixing.
@@ -145,53 +151,77 @@ to a line outside the map:
    (e.g., "add `#![deny(unsafe_code)]` at the crate root") or for
    commentary on pre-existing code that this PR builds on.
 
-**Review aspects** (one sub-agent per aspect):
+*Case B — file is NOT in the diff at all.* Neither escape above works:
+a file-level comment on an untouched file is also silently dropped, and
+re-anchoring within the same file is impossible. First ask whether the
+finding is genuinely in-scope for this PR. A code review is scoped to
+the diff under review; drive-by observations about the rest of the
+codebase belong in a separate issue, not in this review. Then:
+1. **In-scope** (the PR's correctness depends on the untouched code, or
+   the PR newly relies on a broken precondition there): re-anchor the
+   comment to a line in a *touched* file that interacts with the issue,
+   and describe the untouched-file problem in the body.
+2. **Out-of-scope but worth noting**: fold the observation into the
+   `# Summary` section as a brief "related / out-of-scope" note, ideally
+   suggesting a follow-up issue. Do NOT emit it as an inline comment.
+3. **Not actionable for this PR**: drop the finding.
 
-1. **Correctness**: Logical bugs, off-by-one errors, error handling
-   gaps, incorrect state transitions, unhandled edge cases, and
-   violation of documented invariants. Check whether error paths
-   clean up state properly. Verify that unsafe operations (if any)
-   have correct safety justifications.
+**Review aspects** (one sub-agent per aspect — three sub-agents, each
+reviewing the PR at a different zoom level):
 
-2. **Concurrency**: Race conditions between concurrent readers/writers,
-   lock ordering violations, deadlock potential, livelock scenarios,
-   and missing synchronization. Examine whether locks are held during
-   I/O or blocking operations. Check atomic ordering correctness
-   (Acquire/Release pairing). Verify that documented locking protocols
-   match the actual code.
+1. **Design** (macro — *does the shape of the change make sense?*):
+   architecture and high-level design; API surface clarity, type
+   safety, ease of correct use, difficulty of misuse; module
+   organization and abstraction boundaries; whether new features,
+   modules, options, or tests fit the existing structure or demand
+   adjustments to it; module- and crate-level documentation
+   completeness; conformance with overarching design principles
+   such as Single Responsibility, Don't Repeat Yourself, Information
+   Hiding, Open/Closed, Least Surprise, Loose Coupling and Strong
+   Cohesion, and Consistency. If the PR introduces a Linux-facing
+   interface, judge the *shape* of that interface against Linux
+   (the *behavior* check belongs in Correctness).
 
-3. **API design and documentation**: Module interface clarity,
-   type safety, ease of correct use and difficulty of misuse,
-   naming consistency, appropriate abstraction boundaries, and
-   whether the API guides callers toward correct usage. Check for
-   missing or misleading documentation, especially for concurrency
-   contracts and error semantics. Evaluate whether module-level
-   docs exist for major components.
+2. **Correctness** (meso — *does the code do the right thing?*):
+   logical bugs, off-by-one errors, incorrect state transitions,
+   unhandled edge cases, violation of documented invariants;
+   error handling gaps and whether error paths clean up state;
+   safety justifications for unsafe operations; race conditions,
+   lock ordering, deadlock and livelock potential, missing
+   synchronization, locks held across I/O or blocking calls,
+   atomic ordering (Acquire/Release pairing), and whether
+   documented locking protocols match the code; whether locks
+   protect the right region (neither too small nor too large) and
+   whether the most suitable synchronization primitive is chosen;
+   Linux ABI / behavioral conformance when this PR touches a
+   syscall, /proc, /sys, or other Linux-compatible surface; and
+   *test-coverage adequacy* — whether the changed code is
+   adequately tested, including regression tests for bug fixes
+   and concurrent stress tests for concurrency-sensitive code.
 
-4. **Efficiency**: Unnecessary copies, clones, heap allocations,
-   and atomic operations on hot paths. Missed opportunities for
-   batched I/O. Regressions from the old code's performance
-   characteristics. Redundant iterations over the same data.
-   Appropriate use of pre-allocation and capacity hints.
+3. **Craft** (micro — *is the code well-written?*): descriptive
+   and accurate names for modules, types, functions, and
+   variables; consistency in naming, style, and coding patterns
+   across the diff and with surrounding code; consistent ordering
+   of items (e.g., methods within an impl, fields within a
+   struct); unnecessary copies, clones, heap allocations, and
+   atomic operations on hot paths; missed opportunities for
+   batched I/O or pre-allocation; conformance to the project's
+   coding guidelines (in `book/src/to-contribute/coding-guidelines/`
+   and AGENTS.md / CLAUDE.md), including function size, nesting
+   depth, error propagation style, visibility modifiers, doc
+   comment conventions, and lint suppression scope; and the
+   *quality of test code* — readability, naming, structure, and
+   whether mock-based testing would add value.
 
-5. **Coding guidelines**: Conformance to the project's coding
-   guidelines (in CLAUDE.md or AGENTS.md). Check naming conventions,
-   function size, nesting depth, error propagation style, visibility
-   modifiers, doc comment conventions, and lint suppression scope.
-
-6. **Testing**: Whether the changed code is adequately tested.
-   Missing unit tests or regression tests for bug fixes. Whether
-   concurrency-sensitive code has concurrent stress tests. Whether
-   mock-based testing is feasible and would add value.
-
-Not all aspects apply to every PR. Skip aspects that are not relevant (e.g., skip concurrency for a pure documentation change). For small PRs, fewer sub-agents may suffice. Cap at 6 sub-agents in parallel; for very large PRs (many files, wide-ranging changes), run in two sequential waves rather than adding a 7th concurrent agent — context blowup in the merge step is worse than the extra wall-clock.
+Not all aspects apply to every PR. Skip aspects that are not relevant (e.g., skip Correctness's concurrency sub-questions for a pure documentation change, or skip Design entirely for a one-line bug fix). For very large PRs (many files, wide-ranging changes), prefer running the three sub-agents in two sequential waves of split scope (e.g., Correctness over kernel/, then Correctness over libs/) rather than adding more concurrent agents — context blowup in the merge step is worse than the extra wall-clock.
 
 #### Step 7c: Merge sub-agent results
 
 After all sub-agents complete:
 
 1. **Collect** all comments from all sub-agents.
-2. **Deduplicate**: if two sub-agents found the same issue (e.g., a race condition that is both a correctness bug and a concurrency issue), keep the most complete version and discard the other.
+2. **Deduplicate**: if two sub-agents found the same issue (e.g., Design flags an API as misuse-prone and Correctness flags a caller that misused it; or Craft flags a misleading name and Correctness flags the bug the misleading name enabled), keep the most complete version and discard the other.
 3. **Merge shared-root-cause comments**: when several comments describe different symptoms of the same underlying bug or design flaw, collapse them into a single comment that names the root cause once and proposes the single fix that resolves all symptoms. Do not leave one comment per symptom; that forces the author to re-derive the connection. Cross-reference the symptom lines in prose within the merged comment.
 4. **Group by subject**: order comments so that those targeting the same file, module, subsystem, or topic sit next to one another. The reader should be able to read the review top-to-bottom and pick up related issues in one pass, without jumping around the file tree.
 5. **Order within each group by severity**: blockers first, then significant, then minor.
@@ -218,7 +248,7 @@ Spawn ONE additional sub-agent with a **clean context** (a fresh Agent invocatio
   1. **Every concrete claim** — line numbers, file modes, behavior assertions about shell / Rust / framework semantics, named functions and constants, external tool/flag names.
   2. **Every verdict** — is "blocker" warranted? Is "minor" understated?
   3. **Every fix snippet** — does the suggested code actually compile, parse, or otherwise do what the comment says? Does the suggested command flag exist? Does the suggested API field exist?
-  4. **Every line-anchored heading** — cross-check `## \`path\` line N` against the valid-lines map. Any line not in the map will be silently dropped by GitHub on submit; flag those for re-anchoring or conversion to file-level.
+  4. **Every comment heading** — cross-check against the valid-lines map. For a line-anchored heading `` ## `path` line N ``, the line must be in the map for that path. For a file-level heading `` ## `path` ``, the path must be a key in the map (i.e., the file appears in the PR's diff). Any heading that fails either check will be silently dropped by GitHub on submit; flag those — and indicate whether the file is in the diff at all, since that decides between re-anchoring within the file, re-anchoring to a related touched file, or moving the observation into `# Summary` (see the anchoring rule's Case A vs Case B).
 - Instruction to return a structured report (claims-confirmed / claims-with-errors / claims-unverifiable) and NOT rewrite the review itself.
 
 Apply the reported fixes to the draft. For claims the sub-agent could not verify from local files (e.g., external documentation), either hedge the language ("per nixpkgs convention...") or cite a source; do not leave unhedged assertions the sub-agent flagged as unverifiable.
@@ -580,7 +610,7 @@ code that this PR builds on, use the file-level format. The
 `scripts/validate_review.py` helper checks this automatically, and
 `submit_review.sh` runs it as a pre-flight check before any submit.
 
-Group headings like `# Correctness` or `# API Design` (first-level `#`
+Group headings like `# Design`, `# Correctness`, or `# Craft` (first-level `#`
 headings) are allowed for organizing the review for human readability.
 They are ignored by the parser (they don't have `##` headings) and will
 not be submitted to GitHub. The Summary section is the right place for

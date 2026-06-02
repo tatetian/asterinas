@@ -158,6 +158,23 @@ def parse_review_headings(review_path: Path) -> list[dict]:
     return headings
 
 
+def coalesce_ranges(lines: set[int]) -> list[list[int]]:
+    """Convert a set of line numbers into sorted inclusive [start, end] pairs."""
+    if not lines:
+        return []
+    sorted_lines = sorted(lines)
+    ranges: list[list[int]] = []
+    start = prev = sorted_lines[0]
+    for n in sorted_lines[1:]:
+        if n == prev + 1:
+            prev = n
+        else:
+            ranges.append([start, prev])
+            start = prev = n
+    ranges.append([start, prev])
+    return ranges
+
+
 def nearest(valid_lines: list[int], target: int, k: int = 3) -> list[int]:
     if not valid_lines:
         return []
@@ -183,14 +200,20 @@ def validate(
             continue
 
         if path not in valid:
-            if h["line_start"] is None:
-                errors.append(
-                    f"file-level comment on `{path}`: file is not in the PR diff"
-                )
-            else:
-                errors.append(
-                    f"`{path}` line {h['line_start']}: file is not in the PR diff"
-                )
+            anchor = (
+                "file-level comment"
+                if h["line_start"] is None
+                else f"line {h['line_start']}"
+            )
+            errors.append(
+                f"`{path}` {anchor}: file is NOT in the PR diff. "
+                "Neither re-anchoring within the file nor converting to "
+                "file-level will help (GitHub drops both). If the finding is "
+                "in-scope, re-anchor to a touched file that interacts with "
+                "the issue and describe the untouched-file problem in the "
+                "body; otherwise move it into `# Summary` as a related/"
+                "out-of-scope note, or drop it."
+            )
             continue
 
         if h["line_start"] is None:
@@ -246,8 +269,12 @@ def main() -> int:
     valid = parse_diff(diff_text)
 
     if args.emit_valid_lines:
-        # Sorted lists for determinism / readability.
-        out = {p: sorted(lines) for p, lines in valid.items()}
+        # Coalesce each file's set of valid line numbers into a list of
+        # inclusive [start, end] ranges. Within a hunk the valid RHS lines
+        # are always contiguous (the parser advances `new_line` only on `+`
+        # and ` `), so ranges represent the data faithfully and an order of
+        # magnitude more compactly than listing every line.
+        out = {p: coalesce_ranges(lines) for p, lines in valid.items()}
         print(json.dumps(out, indent=2))
         return 0
 
@@ -273,8 +300,10 @@ def main() -> int:
     print()
     print(
         "GitHub will silently drop these comments on submit. Fix the review "
-        "file: either re-anchor to a line shown in the diff, or convert to "
-        "file-level format `## `path`` (drop the `line N` suffix)."
+        "file. If the file IS in the PR diff: re-anchor to a line shown in "
+        "the diff, or convert to file-level format `## `path`` (drop the "
+        "`line N` suffix). If the file is NOT in the PR diff: re-anchor to "
+        "a related touched file, or move the observation into `# Summary`."
     )
     return 1
 

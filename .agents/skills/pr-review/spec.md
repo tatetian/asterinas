@@ -359,7 +359,7 @@ Accepts:
 
    **7a. Prepare sub-agent context.** Read the diff, identify the changed-files list and PR description, and assemble the shared briefing (diff, description, worktree path, review-file format spec).
 
-   **7b. Parallel review.** Spawn several sub-agents in parallel, one per aspect (correctness, concurrency, API design and documentation, efficiency, coding guidelines, testing). Each returns a list of comments in the review-file format. For large PRs, cap at 6 in parallel; for very large ones, run sequentially in two waves to avoid context blowup.
+   **7b. Parallel review.** Spawn three sub-agents in parallel, one per zoom level: **Design** (macro — architecture, API surface, organization, design principles, doc completeness), **Correctness** (meso — bugs, edges, errors, concurrency, Linux ABI conformance, test-coverage adequacy), and **Craft** (micro — naming, consistency, style, micro-efficiency, coding-guidelines conformance, test-code quality). Each returns a list of comments in the review-file format. For very large PRs, split scope and run in two sequential waves rather than adding more concurrent agents.
 
    **7c. Merge.** Apply these passes in order:
 
