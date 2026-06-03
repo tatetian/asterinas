@@ -117,6 +117,7 @@ jobs:
               --jq '.content' | base64 -d > "$dest"
           }
           fetch .github/codex-output-schema.json
+          fetch .agents/skills/aster-pr-review/review-guidance.md
           fetch .agents/skills/aster-pr-review/scripts/submit_review.sh
           fetch .agents/skills/aster-pr-review/scripts/validate_review.py
           fetch .agents/skills/aster-pr-review/scripts/from_codex_json.py
@@ -132,25 +133,23 @@ jobs:
           PR_TITLE: ${{ steps.pr_info.outputs.title }}
           PR_BODY: ${{ steps.pr_info.outputs.body }}
         run: |
-          cat > codex-prompt.md <<'PROMPT_HEADER'
-          You are reviewing a pull request for the Asterinas kernel. Produce structured findings per the output schema, plus a `summary` covering cross-cutting themes.
+          # The review philosophy is in review-guidance.md inside the skill —
+          # it is the canonical source for both human and CI reviewers. The
+          # workflow only adds Codex-specific output-field mechanics and the
+          # per-PR data below.
+          cp .agents/skills/aster-pr-review/review-guidance.md codex-prompt.md
+          cat >> codex-prompt.md <<'PROMPT_OUTPUT'
 
-          Cover three zoom levels (you do not need to label them — just make sure issues at each level are surfaced when they exist):
+          ## Output
 
-          * Design (macro): architecture, API surface clarity, type safety, module boundaries, whether new pieces fit the existing structure, and overarching design principles (single responsibility, DRY, information hiding, least surprise, loose coupling, consistency).
-          * Correctness (meso): logical bugs, off-by-one errors, error-handling gaps, race conditions, lock ordering, atomic-ordering pairing, Linux ABI / behavioral conformance when the PR touches a syscall, /proc, /sys, or other Linux-facing surface, and test-coverage adequacy.
-          * Craft (micro): naming, consistency in style and patterns across the diff, unnecessary clones/heap allocations/atomic ops on hot paths, and conformance to the coding guidelines in book/src/to-contribute/coding-guidelines/. For each guideline citation, build a hyperlink: take the guideline's relative path from the Index in README.md (e.g., "rust-guidelines/language-items/functions-and-methods.md#small-functions") and prepend "https://asterinas.github.io/book/to-contribute/coding-guidelines/", replacing the trailing .md with .html.
+          Produce structured findings per the output schema, plus a `summary` covering cross-cutting themes.
 
-          Output rules (these are MANDATORY — violations cause findings to be dropped on submit):
-
-          * One finding per root cause. If several symptoms share one underlying bug or design flaw, file ONE finding that names the root cause and gives the single fix that resolves all of them; cross-reference the other symptom lines in the body rather than filing per-symptom comments.
-          * Each finding's `body` should end with a concrete fix: a diff, a code snippet, a one-liner command, or a specific API / flag to use. Only omit a fix when the issue requires design discussion first — and say so explicitly ("No fix suggested: this needs a design decision on X.").
-          * Each finding's `priority`: 0 = blocker (must fix before merge), 1 = significant (should fix), 2 = minor (style or low-impact). Prefer fewer, higher-signal findings; only include minor-priority findings when there are no significant ones.
-          * `code_location.line_range` MUST point to lines that are part of the PR's unified diff on the RIGHT side (i.e., added lines or context lines around them). Pre-existing lines that the PR did not touch are NOT anchorable — anchoring there causes GitHub to silently drop the comment. If you need to call out pre-existing code, re-anchor to a related diff line and describe the pre-existing problem in the body.
-          * `code_location.absolute_file_path`: use repository-relative paths (e.g., "kernel/src/foo.rs"), NOT absolute filesystem paths (e.g., "/home/runner/work/...").
+          * `priority` per finding: 0 = blocker, 1 = significant, 2 = minor (matching the severity definitions above).
+          * `code_location.absolute_file_path`: a repository-relative path per the Paths section above.
+          * `code_location.line_range`: start and end lines per the Anchoring section above. Lines outside the PR's unified diff will be silently dropped on submit.
 
           After listing findings, write the `summary`: synthesize cross-cutting themes, what the PR does well, the top 2-3 issues that need attention, and any structural recommendations. Do not bullet-list every finding — the findings array already does that.
-          PROMPT_HEADER
+          PROMPT_OUTPUT
 
           {
             printf '\n'
