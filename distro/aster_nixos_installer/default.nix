@@ -1,4 +1,4 @@
-{ disable-systemd ? "false", stage-2-hook ? "/bin/sh -l", log-level ? "error"
+{ disable-systemd ? "false", stage-2-hook ? "/bin/sh -l", log-level ? "4"
 , console ? "hvc0", extra-substituters ? "", extra-trusted-public-keys ? ""
 , config-file-name ? "configuration.nix", target_platform ? "x86_64-linux"
 , pkgs ? import <nixpkgs> { } }:

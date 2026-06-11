@@ -35,27 +35,53 @@ console=ttyS0
 console=ttyS0 console=hvc0
 ```
 
-## Asterinas-specific
+### `earlycon`
 
-### `ostd.log_level`
-
-Set the verbosity level for Asterinas's logs.
-
-Valid values (from most to least severe):
-- `off`
-- `emerg`
-- `alert`
-- `crit`
-- `error`
-- `warn` (alias: `warning`)
-- `notice`
-- `info`
-- `debug`
+Enable the early console that OSTD brings up during early boot.
+The name follows Linux's `earlycon` parameter.
+Asterinas currently supports a simplified form.
 
 Example:
 ```text
-ostd.log_level=error
+earlycon
 ```
+
+Notes:
+- If omitted, the early console stays disabled.
+- Only the bare `earlycon` token is supported; complex Linux forms such as `earlycon=uart8250,io,0x3f8,115200` are not supported yet.
+
+### `loglevel`
+
+Set the OSTD log filter (`ostd::log::LevelFilter`).
+
+Valid values are decimal integers `0` through `8`:
+
+| Value | `LevelFilter` | Messages printed                    |
+|-------|---------------|-------------------------------------|
+| `0`   | `Off`         | (none)                              |
+| `1`   | `Emerg`       | emerg only                          |
+| `2`   | `Alert`       | emerg, alert                        |
+| `3`   | `Crit`        | emerg through crit                  |
+| `4`   | `Error`       | emerg through error                 |
+| `5`   | `Warning`     | emerg through warn                  |
+| `6`   | `Notice`      | emerg through notice                |
+| `7`   | `Info`        | emerg through info                  |
+| `8`   | `Debug`       | all levels (emerg through debug)    |
+
+Example:
+```text
+loglevel=4
+```
+
+Notes:
+- When omitted, invalid, or greater than `8`, the default is `8` (debug).
+
+Combined example:
+```text
+earlycon loglevel=4 console=ttyS0
+```
+
+## Asterinas-specific
 
 ### `i8042.exist`
 

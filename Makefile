@@ -93,6 +93,9 @@ DEV_TRUSTED_PUBLIC_KEY ?= aster-nixos-dev.cachix.org-1:xrCbE2flfliFTQCY/2HeJoT2t
 
 # ========================= End of Makefile options. ==========================
 
+# Convert LOG_LEVEL to 0..=8 for the kernel command line (shared with NixOS build scripts).
+LOG_LEVEL_NUM := $(shell "$(CURDIR)/tools/nixos/log_level_to_num.sh" "$(LOG_LEVEL)")
+
 export OSDK_TARGET_ARCH=$(TARGET_ARCH)
 
 SHELL := /bin/bash
@@ -102,7 +105,8 @@ CARGO_OSDK := ~/.cargo/bin/cargo-osdk
 # Common arguments for `cargo osdk` `build`, `run` and `test` commands.
 CARGO_OSDK_COMMON_ARGS :=
 # The build arguments also apply to the `cargo osdk run` command.
-CARGO_OSDK_BUILD_ARGS := --kcmd-args="ostd.log_level=$(LOG_LEVEL)"
+CARGO_OSDK_BUILD_ARGS := --kcmd-args="loglevel=$(LOG_LEVEL_NUM)"
+CARGO_OSDK_BUILD_ARGS += --kcmd-args="earlycon"
 CARGO_OSDK_BUILD_ARGS += --kcmd-args="console=$(CONSOLE)"
 CARGO_OSDK_TEST_ARGS :=
 
