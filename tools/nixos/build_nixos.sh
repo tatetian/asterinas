@@ -16,12 +16,16 @@ CONFIG_PATH=${DISTRO_DIR}/etc_nixos/${CONFIG_FILE_NAME}
 
 NIX_SYSTEM=$("${SCRIPT_DIR}/print_target_nix_system.sh" "${TARGET_ARCH}") || exit 1
 
+if [ -z "${LOG_LEVEL_NUM}" ]; then
+    LOG_LEVEL_NUM="$("${SCRIPT_DIR}/log_level_to_num.sh" "${LOG_LEVEL:-error}")"
+fi
+
 pushd $DISTRO_DIR
 nix-build aster_nixos_installer/default.nix \
     --argstr target_platform "${NIX_SYSTEM}" \
     --argstr disable-systemd "${NIXOS_DISABLE_SYSTEMD}" \
     --argstr stage-2-hook "${NIXOS_STAGE_2_INIT}" \
-    --argstr log-level "${LOG_LEVEL}" \
+    --argstr log-level "${LOG_LEVEL_NUM}" \
     --argstr console "${CONSOLE}" \
     --argstr extra-substituters "${RELEASE_SUBSTITUTER} ${DEV_SUBSTITUTER}" \
     --argstr extra-trusted-public-keys "${RELEASE_TRUSTED_PUBLIC_KEY} ${DEV_TRUSTED_PUBLIC_KEY}"

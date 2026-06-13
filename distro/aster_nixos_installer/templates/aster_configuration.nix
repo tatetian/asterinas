@@ -59,9 +59,10 @@
         description = "Stage 2 init command (fallback when systemd disabled).";
       };
       log-level = lib.mkOption {
-        type = lib.types.enum [ "error" "warn" "info" "debug" "trace" ];
+        type = lib.types.enum [ "0" "1" "2" "3" "4" "5" "6" "7" "8" ];
         default = "@aster-log-level@";
-        description = "The log level of Asterinas NixOS.";
+        description =
+          "Kernel `loglevel=` value (0..=8), aligned with `ostd::log::LevelFilter` and `LOG_LEVEL` / `LOG_LEVEL_NUM` in the Asterinas Makefile: 0 off, 1 emerg, 2 alert, 3 crit, 4 error, 5 warn, 6 notice, 7 info, 8 debug.";
       };
       console = lib.mkOption {
         type = lib.types.enum [ "tty0" "hvc0" ];
