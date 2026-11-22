@@ -6,8 +6,8 @@
 //! initialized for each frame.
 //! Each entry in this array holds the metadata for a single frame.
 //! There would be a dedicated small
-//! "heap" space in each slot for dynamic metadata. You can store anything as
-//! the metadata of a frame as long as it's [`Sync`].
+//! "heap" space in each slot for dynamic metadata.
+//! Metadata types must satisfy the requirements of [`AnyFrameMeta`].
 //!
 //! # Implementation
 //!
@@ -44,6 +44,7 @@ use core::{
     fmt::Debug,
     mem::{ManuallyDrop, MaybeUninit},
     ops::Range,
+    pin::Pin,
     sync::atomic::{AtomicU64, Ordering},
 };
 
@@ -135,7 +136,18 @@ const_assert!(size_of::<MetaSlot>() == META_SLOT_SIZE);
 /// If a frame type needs specific drop behavior, it should specify
 /// when implementing this trait. When we drop the last handle to
 /// this frame, the `on_drop` method will be called. The `on_drop`
-/// method is called with the physical address of the frame.
+/// method is called with a reader for the frame.
+///
+/// Metadata is pinned in its slot after installation.
+/// Address-sensitive metadata
+/// must be `!Unpin` and establish its address dependency only after installation.
+/// Mutable access through frame handles and list cursors preserves this pinning.
+///
+/// [`Pin::set`] can replace metadata in place if a caller can construct another
+/// value of the same type.
+/// It runs [`Drop`], but not [`Self::on_drop`].
+/// Types must
+/// either make such replacement safe or prevent constructing replacement values.
 ///
 /// The implemented structure should have a size less than or equal to
 /// [`FRAME_METADATA_MAX_SIZE`] and an alignment less than or equal to
@@ -146,9 +158,27 @@ const_assert!(size_of::<MetaSlot>() == META_SLOT_SIZE);
 ///
 /// If `on_drop` reads the page using the provided `VmReader`, the
 /// implementer must ensure that the frame is safe to read.
+/// Implementations must also preserve pinning in `on_drop` and `Drop`: once
+/// pinned, metadata and any structurally pinned fields must not be moved.
+/// Safety invariants must hold under safe in-place replacement as described above;
+/// `on_drop` is not a substitute for `Drop` when replacement is possible.
 pub unsafe trait AnyFrameMeta: Any + Send + Sync {
-    /// Called when the last handle to the frame is dropped.
-    fn on_drop(&mut self, _reader: &mut VmReader<Infallible>) {}
+    /// Runs before the frame's metadata is destroyed by its owner.
+    ///
+    /// This also runs when the owner repurposes or resets the frame.
+    /// It does not
+    /// run when metadata is replaced through [`Pin::set`].
+    ///
+    /// # Safety
+    ///
+    /// The caller must exclusively own the associated frame and be destroying
+    /// its metadata.
+    /// The reader must cover that frame from its beginning, and
+    /// the callback must not have been invoked for this metadata before.
+    /// Afterward, the metadata must only be dropped in place; it must not be
+    /// accessed again except by its destructor.
+    /// If the callback panics, the frame must not be reused.
+    unsafe fn on_drop(self: Pin<&mut Self>, _reader: &mut VmReader<Infallible>) {}
 
     /// Whether the metadata's associated frame is untyped.
     ///
@@ -432,7 +462,8 @@ impl MetaSlot {
         // access to the frame metadata.
         unsafe {
             // Invoke the custom `on_drop` handler.
-            (*meta_ptr).on_drop(&mut reader);
+            // Metadata remains in its slot through both the callback and Drop.
+            Pin::new_unchecked(&mut *meta_ptr).on_drop(&mut reader);
             // Drop the frame metadata.
             core::ptr::drop_in_place(meta_ptr);
         }

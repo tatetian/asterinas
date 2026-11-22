@@ -56,7 +56,10 @@ macro_rules! impl_untyped_frame_meta_for {
     ($t:ty, $body:expr) => {
         // SAFETY: Untyped frames can be safely read.
         unsafe impl $crate::mm::frame::meta::AnyFrameMeta for $t {
-            fn on_drop(&mut self, reader: &mut $crate::mm::VmReader<$crate::mm::Infallible>) {
+            unsafe fn on_drop(
+                self: core::pin::Pin<&mut Self>,
+                reader: &mut $crate::mm::VmReader<$crate::mm::Infallible>,
+            ) {
                 $body
             }
 

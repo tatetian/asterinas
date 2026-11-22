@@ -1,0 +1,10 @@
+    Checking pinned-frame-api-tests v0.0.0 ($WORKTREE/pin-frame-metadata/api-tests)
+error[E0277]: the trait bound `SlabMeta<64>: Default` is not satisfied
+  --> src/lib.rs:63:35
+   |
+63 |     slab.meta_mut().project().set(Default::default());
+   |                                   ^^^^^^^^^^^^^^^^^^ the trait `Default` is not implemented for `SlabMeta<64>`
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `pinned-frame-api-tests` (lib) due to 1 previous error
+[Error]: Command RUSTFLAGS=" --check-cfg cfg(ktest)" "cargo" "check" "-Zbuild-std=core,alloc,compiler_builtins" "-Zbuild-std-features=compiler-builtins-mem" "--target" "x86_64-unknown-none" "--lib" "--features" "replacement" failed with status: ExitStatus(unix_wait_status(25856))

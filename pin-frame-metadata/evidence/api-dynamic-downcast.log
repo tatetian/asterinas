@@ -1,0 +1,23 @@
+    Checking pinned-frame-api-tests v0.0.0 ($WORKTREE/pin-frame-metadata/api-tests)
+warning: variable does not need to be mutable
+  --> src/lib.rs:51:9
+   |
+51 |     let mut pinned = slab.dyn_meta_mut();
+   |         ----^^^^^^
+   |         |
+   |         help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+error[E0596]: cannot borrow data in dereference of `Pin<&mut dyn AnyFrameMeta>` as mutable
+  --> src/lib.rs:52:15
+   |
+52 |     let any = &mut *pinned as &mut dyn core::any::Any;
+   |               ^^^^^^^^^^^^ cannot borrow as mutable
+   |
+   = help: trait `DerefMut` is required to modify through a dereference, but it is not implemented for `Pin<&mut dyn AnyFrameMeta>`
+
+For more information about this error, try `rustc --explain E0596`.
+warning: `pinned-frame-api-tests` (lib) generated 1 warning
+error: could not compile `pinned-frame-api-tests` (lib) due to 1 previous error; 1 warning emitted
+[Error]: Command RUSTFLAGS=" --check-cfg cfg(ktest)" "cargo" "check" "-Zbuild-std=core,alloc,compiler_builtins" "-Zbuild-std-features=compiler-builtins-mem" "--target" "x86_64-unknown-none" "--lib" "--features" "dynamic-downcast" failed with status: ExitStatus(unix_wait_status(25856))

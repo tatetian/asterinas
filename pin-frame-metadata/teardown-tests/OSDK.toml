@@ -1,0 +1,11 @@
+[boot]
+method = "vmm-direct"
+
+[grub]
+boot_protocol = "multiboot2"
+
+[build]
+strip_elf = true
+
+[qemu]
+args = "-machine q35,kernel-irqchip=split -cpu Icelake-Server,+x2apic,+vmx -accel kvm -m 256M -smp 2 -nographic -display none -serial stdio -monitor none -no-reboot -device isa-debug-exit,iobase=0xf4,iosize=0x04"

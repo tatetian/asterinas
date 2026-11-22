@@ -1,0 +1,20 @@
+[package]
+name = "pinned-frame-teardown-tests"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+
+[lints]
+workspace = true
+
+[dependencies]
+ostd = { path = "../../ostd" }
+
+[features]
+repurpose = []
+reset = []

@@ -32,6 +32,7 @@ use core::{
     cell::SyncUnsafeCell,
     marker::PhantomData,
     ops::Deref,
+    pin::Pin,
     sync::atomic::{AtomicU8, Ordering},
 };
 
@@ -293,13 +294,15 @@ impl<C: PageTableConfig> PageTablePageMeta<C> {
 // be valid `C::Item`s. The soundness of the following `on_drop` implementation must
 // be reasoned in conjunction with the `page_table/cursor` implementation.
 unsafe impl<C: PageTableConfig> AnyFrameMeta for PageTablePageMeta<C> {
-    fn on_drop(&mut self, reader: &mut VmReader<Infallible>) {
-        let nr_children = self.nr_children.get_mut();
+    unsafe fn on_drop(self: Pin<&mut Self>, reader: &mut VmReader<Infallible>) {
+        // SAFETY: Only fields are accessed; the metadata is not moved.
+        let this = unsafe { self.get_unchecked_mut() };
+        let nr_children = this.nr_children.get_mut();
         if *nr_children == 0 {
             return;
         }
 
-        let level = self.level;
+        let level = this.level;
         let range = if level == C::NR_LEVELS {
             C::TOP_LEVEL_INDEX_RANGE.clone()
         } else {

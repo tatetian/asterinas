@@ -1,0 +1,216 @@
+[Info] [normal] Forwarded QEMU guest port: 6620->22; 10626->8080 13038->6379 1031->5201 32255->31234 4098->31236 2607->11211
+[Info] [test] Forwarded QEMU guest port: 29180->22; 31620->8080 18863->6379 18001->5201 4679->31234 26985->31236 28308->11211
+    Updating crates.io index
+    Updating git repository `https://github.com/asterinas/inherit-methods-macro`
+     Locking 88 packages to latest Rust 1.99.0-nightly compatible versions
+      Adding unwinding v0.2.10 (available: v0.2.11)
+warning: unstable feature specified for `-Ctarget-feature`: `ermsb`
+  |
+  = note: this feature is not stably supported; its behavior can change in the future
+
+warning: `int-to-c-enum` (lib) generated 1 warning
+warning: `id-alloc` (lib) generated 1 warning (1 duplicate)
+warning: `ostd-pod` (lib) generated 1 warning (1 duplicate)
+warning: `align_ext` (lib) generated 1 warning (1 duplicate)
+warning: `ostd-test` (lib) generated 1 warning (1 duplicate)
+warning: `linux-boot-params` (lib) generated 1 warning (1 duplicate)
+warning: `ostd` (lib) generated 1 warning (1 duplicate)
+warning: `osdk-test-kernel` (lib) generated 1 warning (1 duplicate)
+warning: `osdk-heap-allocator` (lib) generated 1 warning (1 duplicate)
+warning: `osdk-frame-allocator` (lib) generated 1 warning (1 duplicate)
+   Compiling osdk-heap-allocator-osdk-bin v0.19.0 ($WORKTREE/target/osdk/osdk-heap-allocator-test-base)
+warning: `osdk-heap-allocator-osdk-bin` (bin "osdk-heap-allocator-osdk-bin") generated 1 warning (1 duplicate)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.43s
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.hle [bit 4]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.rtm [bit 11]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512f [bit 16]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512dq [bit 17]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.clwb [bit 24]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512cd [bit 28]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512bw [bit 30]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512vl [bit 31]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vbmi [bit 1]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.pku [bit 3]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vbmi2 [bit 6]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.gfni [bit 8]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.vaes [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.vpclmulqdq [bit 10]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vnni [bit 11]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512bitalg [bit 12]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512-vpopcntdq [bit 14]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.la57 [bit 16]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=80000008h].EBX.wbnoinvd [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Bh).vmx-apicv-register [bit 8]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Bh).vmx-apicv-vid [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Dh).vmx-posted-intr [bit 7]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.hle [bit 4]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.rtm [bit 11]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512f [bit 16]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512dq [bit 17]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.clwb [bit 24]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512cd [bit 28]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512bw [bit 30]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512vl [bit 31]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vbmi [bit 1]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.pku [bit 3]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vbmi2 [bit 6]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.gfni [bit 8]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.vaes [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.vpclmulqdq [bit 10]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vnni [bit 11]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512bitalg [bit 12]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512-vpopcntdq [bit 14]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.la57 [bit 16]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=80000008h].EBX.wbnoinvd [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Bh).vmx-apicv-register [bit 8]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Bh).vmx-apicv-vid [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Dh).vmx-posted-intr [bit 7]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.hle [bit 4]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.rtm [bit 11]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512f [bit 16]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512dq [bit 17]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.clwb [bit 24]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512cd [bit 28]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512bw [bit 30]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512vl [bit 31]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vbmi [bit 1]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.pku [bit 3]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vbmi2 [bit 6]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.gfni [bit 8]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.vaes [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.vpclmulqdq [bit 10]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vnni [bit 11]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512bitalg [bit 12]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512-vpopcntdq [bit 14]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.la57 [bit 16]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=80000008h].EBX.wbnoinvd [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Bh).vmx-apicv-register [bit 8]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Bh).vmx-apicv-vid [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Dh).vmx-posted-intr [bit 7]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.hle [bit 4]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.rtm [bit 11]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512f [bit 16]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512dq [bit 17]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.clwb [bit 24]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512cd [bit 28]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512bw [bit 30]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512vl [bit 31]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vbmi [bit 1]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.pku [bit 3]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vbmi2 [bit 6]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.gfni [bit 8]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.vaes [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.vpclmulqdq [bit 10]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vnni [bit 11]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512bitalg [bit 12]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512-vpopcntdq [bit 14]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.la57 [bit 16]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=80000008h].EBX.wbnoinvd [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Bh).vmx-apicv-register [bit 8]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Bh).vmx-apicv-vid [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Dh).vmx-posted-intr [bit 7]
+cSeaBIOS (version rel-1.17.0-0-gb52ca86e094d-prebuilt.qemu.org)
+
+
+iPXE (http://ipxe.org) 00:02.0 CA00 PCI2.10 PnP PMM+7EFD1810+7EF31810 CA00
+Press Ctrl-B to configure iPXE (PCI 00:02.0)...
+
+
+
+Booting from ROM..DEBUG: Found a local APIC entry in MADT: LocalApicEntry { header: EntryHeader { entry_type: 0, length: 8 }, processor_id: 0, apic_id: 0, flags: 1 }
+DEBUG: Found a local APIC entry in MADT: LocalApicEntry { header: EntryHeader { entry_type: 0, length: 8 }, processor_id: 1, apic_id: 1, flags: 1 }
+DEBUG: Found a local APIC entry in MADT: LocalApicEntry { header: EntryHeader { entry_type: 0, length: 8 }, processor_id: 2, apic_id: 2, flags: 1 }
+DEBUG: Found a local APIC entry in MADT: LocalApicEntry { header: EntryHeader { entry_type: 0, length: 8 }, processor_id: 3, apic_id: 3, flags: 1 }
+INFO: Initializing frame metadata for physical memory 0..280000000
+INFO: Adding free frames to the allocator: 0..8000
+INFO: Adding free frames to the allocator: 9000..9f000
+INFO: Adding free frames to the allocator: 100000..8000000
+INFO: Adding free frames to the allocator: 13227000..7ffd6000
+INFO: Adding free frames to the allocator: 100000000..280000000
+INFO: Initializing the kernel page table
+INFO: Creating new I/O memory allocator builder, ranges: [
+    0x80000000..0x100000000,
+    0x280000000..0x10000000000000,
+]
+INFO: x2APIC found!
+INFO: irq: Initializing PIC as disabled
+DEBUG: Try to reserve security-sensitive MMIO range: 0xfec00000..0xfec01000 with cache policy: Uncacheable
+INFO: irq: IOAPIC found at 0xfec00000, ID 0, version 32, interrupt base 0, interrupt count 23
+INFO: irq: IOAPIC override: ISA interrupt 0 for GSI 2
+INFO: irq: IOAPIC override: ISA interrupt 5 for GSI 5
+INFO: irq: IOAPIC override: ISA interrupt 9 for GSI 9
+INFO: irq: IOAPIC override: ISA interrupt 10 for GSI 10
+INFO: irq: IOAPIC override: ISA interrupt 11 for GSI 11
+INFO: TSC frequency: 3791992000 Hz
+INFO: timer: Enable APIC TSC deadline mode
+INFO: x2APIC ID: 0, Version: 14, Max LVT: 5
+INFO: Booting 3 processors
+INFO: Booting all application processors...
+INFO: Detected ISA extensions: IsaExtensions(VMX | X2APIC | TSC_DEADLINE | XSAVE | AVX | RDRAND | XAPIC | FSGSBASE)
+INFO: Detected ISA extensions: IsaExtensions(VMX | X2APIC | TSC_DEADLINE | XSAVE | AVX | RDRAND | XAPIC | FSGSBASE)
+INFO: x2APIC ID: 1, Version: 14, Max LVT: 5
+INFO: x2APIC ID: 3, Version: 14, Max LVT: 5
+INFO: Processor 1 started. Spinning for tasks.
+INFO: Detected ISA extensions: IsaExtensions(VMX | X2APIC | TSC_DEADLINE | XSAVE | AVX | RDRAND | XAPIC | FSGSBASE)
+INFO: Processor 3 started. Spinning for tasks.
+INFO: x2APIC ID: 2, Version: 14, Max LVT: 5
+INFO: Processor 2 started. Spinning for tasks.
+INFO: All application processors started. The BSP continues to run.
+WARN: IOMMU initialization error: NoIommu
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x20,
+    end: 0x21,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0xa1,
+    end: 0xa2,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x21,
+    end: 0x22,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0xa0,
+    end: 0xa1,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x3f8,
+    end: 0x400,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x40,
+    end: 0x41,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x41,
+    end: 0x42,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x42,
+    end: 0x43,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x43,
+    end: 0x44,
+}
+INFO: acpi: Collected information AcpiInfo { century_register: Some(50), boot_flags: Some(IaPcBootArchFlags(2)), reset_port_and_val: Some((3321, 15)), pci_ecam_region: Some(PciEcamRegion { base_address: 2952790016, bus_start: 0, bus_end: 255 }) }
+INFO: QEMU hypervisor detected, assuming that the isa-debug-exit device exists
+DEBUG: Try to acquire PIO range: 0xf4..0xf8
+
+[ktest runner] running 247 tests in 4 crates
+
+[ktest runner] skipping crate "osdk-frame-allocator".
+
+running 2 tests in crate "osdk-heap-allocator"
+
+test osdk_heap_allocator::cpu_local_allocator::test::alloc_dealloc_cpu_local_various_types ... ok
+test osdk_heap_allocator::test::slab_counter_tracks_slab_pages ... ok
+
+test result: ok. 2 passed; 0 failed; 0 filtered out.
+
+[ktest runner] skipping crate "osdk-test-kernel".
+
+[ktest runner] skipping crate "ostd".
+
+[ktest runner] All crates tested.
+E

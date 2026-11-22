@@ -2,7 +2,7 @@
 
 //! The unique frame pointer that is not shared with others.
 
-use core::{marker::PhantomData, mem::ManuallyDrop, sync::atomic::Ordering};
+use core::{marker::PhantomData, mem::ManuallyDrop, pin::Pin, sync::atomic::Ordering};
 
 use super::{
     AnyFrameMeta, Frame, MetaSlot,
@@ -13,7 +13,8 @@ use crate::mm::{HasPaddr, HasSize, PAGE_SIZE, Paddr, PagingConsts, PagingLevel, 
 /// An owning frame pointer.
 ///
 /// Unlike [`Frame`], the frame pointed to by this pointer is not shared with
-/// others. So a mutable reference to the metadata is available for the frame.
+/// others. So a pinned mutable reference to the metadata is available for the frame.
+/// Moving this handle does not move the metadata out of its frame metadata slot.
 #[repr(transparent)]
 pub struct UniqueFrame<M: AnyFrameMeta + ?Sized> {
     ptr: *const MetaSlot,
@@ -47,11 +48,15 @@ impl<M: AnyFrameMeta> UniqueFrame<M> {
         unsafe { &*self.slot().as_meta_ptr::<M>() }
     }
 
-    /// Gets the mutable metadata of this page.
-    pub fn meta_mut(&mut self) -> &mut M {
-        // SAFETY: The type is tracked by the type system.
-        // And we have the exclusive access to the metadata.
-        unsafe { &mut *self.slot().as_meta_ptr::<M>() }
+    /// Gets the pinned mutable metadata of this page.
+    ///
+    /// Metadata that implements [`Unpin`] can be accessed through [`Pin::get_mut`].
+    pub fn meta_mut(&mut self) -> Pin<&mut M> {
+        // SAFETY:
+        // 1. The type is tracked by the type system and we have exclusive access.
+        // 2. Metadata stays in its slot until dropped in place. All public mutable
+        //    access is pinned, including access through lists and type erasure.
+        unsafe { Pin::new_unchecked(&mut *self.slot().as_meta_ptr::<M>()) }
     }
 }
 
@@ -69,19 +74,19 @@ impl<M: AnyFrameMeta + ?Sized> UniqueFrame<M> {
 
     /// Gets the dynamically-typed metadata of this frame.
     ///
-    /// If the type is known at compile time, use [`Frame::meta`] instead.
+    /// If the type is known at compile time, use [`Self::meta`] instead.
     pub fn dyn_meta(&self) -> &dyn AnyFrameMeta {
         // SAFETY: The metadata is initialized and valid.
         unsafe { &*self.slot().dyn_meta_ptr() }
     }
 
-    /// Gets the dynamically-typed metadata of this frame.
+    /// Gets the pinned, dynamically-typed mutable metadata of this frame.
     ///
-    /// If the type is known at compile time, use [`Frame::meta`] instead.
-    pub fn dyn_meta_mut(&mut self) -> &mut dyn AnyFrameMeta {
-        // SAFETY: The metadata is initialized and valid. We have the exclusive
-        // access to the frame.
-        unsafe { &mut *self.slot().dyn_meta_ptr() }
+    /// If the type is known at compile time, use [`Self::meta_mut`] instead.
+    pub fn dyn_meta_mut(&mut self) -> Pin<&mut dyn AnyFrameMeta> {
+        // SAFETY: The metadata is initialized and we have exclusive access.
+        // As with `meta_mut`, metadata stays in its slot until dropped in place.
+        unsafe { Pin::new_unchecked(&mut *self.slot().dyn_meta_ptr()) }
     }
 
     /// Repurposes the frame with a new metadata.

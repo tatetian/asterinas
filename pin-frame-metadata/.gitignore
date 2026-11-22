@@ -1,0 +1,6 @@
+/review-work/
+/*.log
+/evidence/
+/api-tests/Cargo.lock
+/teardown-tests/Cargo.lock
+/teardown-tests/qemu*.log

@@ -1,0 +1,58 @@
+    Checking pinned-frame-api-tests v0.0.0 ($WORKTREE/pin-frame-metadata/api-tests)
+error[E0277]: `PhantomPinned` cannot be unpinned
+    --> src/lib.rs:36:34
+     |
+  36 |     core::mem::swap(a.meta_mut().get_mut(), b.meta_mut().get_mut());
+     |                                  ^^^^^^^ within `Link<SlabMeta<64>>`, the trait `Unpin` is not implemented for `PhantomPinned`
+     |
+     = note: consider using the `pin!` macro
+             consider using `Box::pin` if you need to access the pinned value outside of the current scope
+note: required because it appears within the type `SlabMeta<64>`
+    --> $WORKTREE/ostd/src/mm/heap/slab.rs:37:12
+     |
+  37 | pub struct SlabMeta<const SLOT_SIZE: usize> {
+     |            ^^^^^^^^
+note: required because it appears within the type `Link<SlabMeta<64>>`
+    --> $WORKTREE/ostd/src/mm/frame/linked_list.rs:423:12
+     |
+ 423 | pub struct Link<M> {
+     |            ^^^^
+note: required by a bound in `Pin::<&'a mut T>::get_mut`
+    --> /root/.rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/pin.rs:1598:12
+     |
+1596 |     pub const fn get_mut(self) -> &'a mut T
+     |                  ------- required by a bound in this associated function
+1597 |     where
+1598 |         T: Unpin,
+     |            ^^^^^ required by this bound in `Pin::<&mut T>::get_mut`
+
+error[E0277]: `PhantomPinned` cannot be unpinned
+    --> src/lib.rs:36:58
+     |
+  36 |     core::mem::swap(a.meta_mut().get_mut(), b.meta_mut().get_mut());
+     |                                                          ^^^^^^^ within `Link<SlabMeta<64>>`, the trait `Unpin` is not implemented for `PhantomPinned`
+     |
+     = note: consider using the `pin!` macro
+             consider using `Box::pin` if you need to access the pinned value outside of the current scope
+note: required because it appears within the type `SlabMeta<64>`
+    --> $WORKTREE/ostd/src/mm/heap/slab.rs:37:12
+     |
+  37 | pub struct SlabMeta<const SLOT_SIZE: usize> {
+     |            ^^^^^^^^
+note: required because it appears within the type `Link<SlabMeta<64>>`
+    --> $WORKTREE/ostd/src/mm/frame/linked_list.rs:423:12
+     |
+ 423 | pub struct Link<M> {
+     |            ^^^^
+note: required by a bound in `Pin::<&'a mut T>::get_mut`
+    --> /root/.rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/pin.rs:1598:12
+     |
+1596 |     pub const fn get_mut(self) -> &'a mut T
+     |                  ------- required by a bound in this associated function
+1597 |     where
+1598 |         T: Unpin,
+     |            ^^^^^ required by this bound in `Pin::<&mut T>::get_mut`
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `pinned-frame-api-tests` (lib) due to 2 previous errors
+[Error]: Command RUSTFLAGS=" --check-cfg cfg(ktest)" "cargo" "check" "-Zbuild-std=core,alloc,compiler_builtins" "-Zbuild-std-features=compiler-builtins-mem" "--target" "x86_64-unknown-none" "--lib" "--features" "whole-link-swap" failed with status: ExitStatus(unix_wait_status(25856))

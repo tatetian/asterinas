@@ -1,0 +1,20 @@
+    Checking pinned-frame-api-tests v0.0.0 ($WORKTREE/pin-frame-metadata/api-tests)
+error[E0596]: cannot borrow data in dereference of `Pin<&mut SlabMeta<64>>` as mutable
+  --> src/lib.rs:44:9
+   |
+44 |         &mut *a.current_meta().unwrap(),
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot borrow as mutable
+   |
+   = help: trait `DerefMut` is required to modify through a dereference, but it is not implemented for `Pin<&mut SlabMeta<64>>`
+
+error[E0596]: cannot borrow data in dereference of `Pin<&mut SlabMeta<64>>` as mutable
+  --> src/lib.rs:45:9
+   |
+45 |         &mut *b.current_meta().unwrap(),
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot borrow as mutable
+   |
+   = help: trait `DerefMut` is required to modify through a dereference, but it is not implemented for `Pin<&mut SlabMeta<64>>`
+
+For more information about this error, try `rustc --explain E0596`.
+error: could not compile `pinned-frame-api-tests` (lib) due to 2 previous errors
+[Error]: Command RUSTFLAGS=" --check-cfg cfg(ktest)" "cargo" "check" "-Zbuild-std=core,alloc,compiler_builtins" "-Zbuild-std-features=compiler-builtins-mem" "--target" "x86_64-unknown-none" "--lib" "--features" "cursor-swap" failed with status: ExitStatus(unix_wait_status(25856))

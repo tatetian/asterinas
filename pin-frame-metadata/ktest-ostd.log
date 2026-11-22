@@ -1,0 +1,702 @@
+[Info] [normal] Forwarded QEMU guest port: 20638->22; 22888->8080 3669->6379 28861->5201 13661->31234 22152->31236 3367->11211
+[Info] [test] Forwarded QEMU guest port: 7401->22; 20503->8080 30115->6379 18662->5201 16396->31234 17981->31236 7754->11211
+    Updating crates.io index
+    Updating git repository `https://github.com/asterinas/inherit-methods-macro`
+     Locking 97 packages to latest Rust 1.99.0-nightly compatible versions
+      Adding minicov v0.3.8 (available: v0.3.9)
+      Adding unwinding v0.2.10 (available: v0.2.11)
+    Blocking waiting for file lock on build directory
+warning: unstable feature specified for `-Ctarget-feature`: `ermsb`
+  |
+  = note: this feature is not stably supported; its behavior can change in the future
+
+warning: `id-alloc` (lib) generated 1 warning
+warning: `int-to-c-enum` (lib) generated 1 warning (1 duplicate)
+warning: `ostd-pod` (lib) generated 1 warning (1 duplicate)
+warning: `linux-boot-params` (lib) generated 1 warning (1 duplicate)
+warning: `align_ext` (lib) generated 1 warning (1 duplicate)
+warning: `ostd-test` (lib) generated 1 warning (1 duplicate)
+warning: `ostd` (lib) generated 1 warning (1 duplicate)
+warning: `osdk-test-kernel` (lib) generated 1 warning (1 duplicate)
+warning: `osdk-heap-allocator` (lib) generated 1 warning (1 duplicate)
+warning: `osdk-frame-allocator` (lib) generated 1 warning (1 duplicate)
+   Compiling ostd-osdk-bin v0.19.0 ($WORKTREE/target/osdk/ostd-test-base)
+warning: `ostd-osdk-bin` (bin "ostd-osdk-bin") generated 1 warning (1 duplicate)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.31s
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.hle [bit 4]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.rtm [bit 11]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512f [bit 16]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512dq [bit 17]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.clwb [bit 24]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512cd [bit 28]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512bw [bit 30]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512vl [bit 31]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vbmi [bit 1]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.pku [bit 3]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vbmi2 [bit 6]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.gfni [bit 8]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.vaes [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.vpclmulqdq [bit 10]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vnni [bit 11]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512bitalg [bit 12]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512-vpopcntdq [bit 14]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.la57 [bit 16]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=80000008h].EBX.wbnoinvd [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Bh).vmx-apicv-register [bit 8]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Bh).vmx-apicv-vid [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Dh).vmx-posted-intr [bit 7]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.hle [bit 4]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.rtm [bit 11]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512f [bit 16]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512dq [bit 17]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.clwb [bit 24]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512cd [bit 28]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512bw [bit 30]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512vl [bit 31]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vbmi [bit 1]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.pku [bit 3]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vbmi2 [bit 6]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.gfni [bit 8]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.vaes [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.vpclmulqdq [bit 10]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vnni [bit 11]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512bitalg [bit 12]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512-vpopcntdq [bit 14]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.la57 [bit 16]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=80000008h].EBX.wbnoinvd [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Bh).vmx-apicv-register [bit 8]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Bh).vmx-apicv-vid [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Dh).vmx-posted-intr [bit 7]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.hle [bit 4]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.rtm [bit 11]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512f [bit 16]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512dq [bit 17]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.clwb [bit 24]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512cd [bit 28]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512bw [bit 30]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512vl [bit 31]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vbmi [bit 1]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.pku [bit 3]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vbmi2 [bit 6]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.gfni [bit 8]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.vaes [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.vpclmulqdq [bit 10]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vnni [bit 11]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512bitalg [bit 12]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512-vpopcntdq [bit 14]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.la57 [bit 16]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=80000008h].EBX.wbnoinvd [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Bh).vmx-apicv-register [bit 8]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Bh).vmx-apicv-vid [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Dh).vmx-posted-intr [bit 7]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.hle [bit 4]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.rtm [bit 11]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512f [bit 16]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512dq [bit 17]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.clwb [bit 24]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512cd [bit 28]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512bw [bit 30]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].EBX.avx512vl [bit 31]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vbmi [bit 1]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.pku [bit 3]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vbmi2 [bit 6]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.gfni [bit 8]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.vaes [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.vpclmulqdq [bit 10]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512vnni [bit 11]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512bitalg [bit 12]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.avx512-vpopcntdq [bit 14]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=07h,ecx=00h].ECX.la57 [bit 16]
+qemu-system-x86_64: warning: host doesn't support requested feature: CPUID[eax=80000008h].EBX.wbnoinvd [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Bh).vmx-apicv-register [bit 8]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Bh).vmx-apicv-vid [bit 9]
+qemu-system-x86_64: warning: host doesn't support requested feature: MSR(48Dh).vmx-posted-intr [bit 7]
+cSeaBIOS (version rel-1.17.0-0-gb52ca86e094d-prebuilt.qemu.org)
+
+
+iPXE (http://ipxe.org) 00:02.0 CA00 PCI2.10 PnP PMM+7EFD1810+7EF31810 CA00
+Press Ctrl-B to configure iPXE (PCI 00:02.0)...
+
+
+
+Booting from ROM..DEBUG: Found a local APIC entry in MADT: LocalApicEntry { header: EntryHeader { entry_type: 0, length: 8 }, processor_id: 0, apic_id: 0, flags: 1 }
+DEBUG: Found a local APIC entry in MADT: LocalApicEntry { header: EntryHeader { entry_type: 0, length: 8 }, processor_id: 1, apic_id: 1, flags: 1 }
+DEBUG: Found a local APIC entry in MADT: LocalApicEntry { header: EntryHeader { entry_type: 0, length: 8 }, processor_id: 2, apic_id: 2, flags: 1 }
+DEBUG: Found a local APIC entry in MADT: LocalApicEntry { header: EntryHeader { entry_type: 0, length: 8 }, processor_id: 3, apic_id: 3, flags: 1 }
+INFO: Initializing frame metadata for physical memory 0..280000000
+INFO: Adding free frames to the allocator: 0..8000
+INFO: Adding free frames to the allocator: 9000..9f000
+INFO: Adding free frames to the allocator: 100000..8000000
+INFO: Adding free frames to the allocator: 13227000..7ffd6000
+INFO: Adding free frames to the allocator: 100000000..280000000
+INFO: Initializing the kernel page table
+INFO: Creating new I/O memory allocator builder, ranges: [
+    0x80000000..0x100000000,
+    0x280000000..0x10000000000000,
+]
+INFO: x2APIC found!
+INFO: irq: Initializing PIC as disabled
+DEBUG: Try to reserve security-sensitive MMIO range: 0xfec00000..0xfec01000 with cache policy: Uncacheable
+INFO: irq: IOAPIC found at 0xfec00000, ID 0, version 32, interrupt base 0, interrupt count 23
+INFO: irq: IOAPIC override: ISA interrupt 0 for GSI 2
+INFO: irq: IOAPIC override: ISA interrupt 5 for GSI 5
+INFO: irq: IOAPIC override: ISA interrupt 9 for GSI 9
+INFO: irq: IOAPIC override: ISA interrupt 10 for GSI 10
+INFO: irq: IOAPIC override: ISA interrupt 11 for GSI 11
+INFO: TSC frequency: 3791992000 Hz
+INFO: timer: Enable APIC TSC deadline mode
+INFO: x2APIC ID: 0, Version: 14, Max LVT: 5
+INFO: Booting 3 processors
+INFO: Booting all application processors...
+INFO: Detected ISA extensions: IsaExtensions(VMX | X2APIC | TSC_DEADLINE | XSAVE | AVX | RDRAND | XAPIC | FSGSBASE)
+INFO: Detected ISA extensions: IsaExtensions(VMX | X2APIC | TSC_DEADLINE | XSAVE | AVX | RDRAND | XAPIC | FSGSBASE)
+INFO: x2APIC ID: 1, Version: 14, Max LVT: 5
+INFO: x2APIC ID: 2, Version: 14, Max LVT: 5
+INFO: Detected ISA extensions: IsaExtensions(VMX | X2APIC | TSC_DEADLINE | XSAVE | AVX | RDRAND | XAPIC | FSGSBASE)
+INFO: Processor 2 started. Spinning for tasks.
+INFO: Processor 1 started. Spinning for tasks.
+INFO: x2APIC ID: 3, Version: 14, Max LVT: 5
+INFO: Processor 3 started. Spinning for tasks.
+INFO: All application processors started. The BSP continues to run.
+WARN: IOMMU initialization error: NoIommu
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x20,
+    end: 0x21,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0xa1,
+    end: 0xa2,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x21,
+    end: 0x22,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0xa0,
+    end: 0xa1,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x3f8,
+    end: 0x400,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x40,
+    end: 0x41,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x41,
+    end: 0x42,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x42,
+    end: 0x43,
+}
+DEBUG: Removing sensitive I/O port range: RawIoPortRange {
+    begin: 0x43,
+    end: 0x44,
+}
+INFO: acpi: Collected information AcpiInfo { century_register: Some(50), boot_flags: Some(IaPcBootArchFlags(2)), reset_port_and_val: Some((3321, 15)), pci_ecam_region: Some(PciEcamRegion { base_address: 2952790016, bus_start: 0, bus_end: 255 }) }
+INFO: QEMU hypervisor detected, assuming that the isa-debug-exit device exists
+DEBUG: Try to acquire PIO range: 0xf4..0xf8
+
+[ktest runner] running 247 tests in 4 crates
+
+[ktest runner] skipping crate "osdk-frame-allocator".
+
+[ktest runner] skipping crate "osdk-heap-allocator".
+
+[ktest runner] skipping crate "osdk-test-kernel".
+
+running 228 tests in crate "ostd"
+
+test ostd::arch::vm::memory::ept::test::leaf_encoding ... ok
+test ostd::arch::vm::vmx::test::multiple_vmx_guards_lifecycle ...DEBUG: Performing inter-processor call to 0xffffffff881534b0 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff881534b0 on CPU CpuId(
+    2,
+)
+DEBUG: Performing inter-processor call to 0xffffffff881534b0 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff882f76e0 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff882f76e0 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff882f76e0 on CPU CpuId(
+    2,
+)
+ ok
+test ostd::arch::vm::vmx::vmcs::test::switch_and_reuse_vmcs ...DEBUG: Performing inter-processor call to 0xffffffff881534b0 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff881534b0 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff881534b0 on CPU CpuId(
+    2,
+)
+DEBUG: Performing inter-processor call to 0xffffffff882f76e0 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff882f76e0 on CPU CpuId(
+    2,
+)
+DEBUG: Performing inter-processor call to 0xffffffff882f76e0 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff881534b0 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff881534b0 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff881534b0 on CPU CpuId(
+    2,
+)
+DEBUG: Performing inter-processor call to 0xffffffff882f76e0 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff882f76e0 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff882f76e0 on CPU CpuId(
+    2,
+)
+ ok
+test ostd::boot::memory_region::test::sort_full_non_overlapping ... ok
+test ostd::boot::memory_region::test::into_non_overlapping_drops_usable_subpage_regions ... ok
+test ostd::cpu::local::test::cpu_local ... ok
+test ostd::cpu::local::test::cpu_local_cell ... ok
+test ostd::io::io_mem::allocator::test::illegal_region ...INFO: Creating new I/O memory allocator builder, ranges: [
+    0x40000000..0x42000000,
+]
+DEBUG: Try to acquire security-insensitive MMIO range: 0x0..0x0 with cache policy: Uncacheable
+DEBUG: Try to acquire security-insensitive MMIO range: 0xffffffffffffffff..0x0 with cache policy: Uncacheable
+DEBUG: Try to acquire security-insensitive MMIO range: 0x40000000..0x40000000 with cache policy: Uncacheable
+DEBUG: Try to acquire security-insensitive MMIO range: 0x40001000..0x40001000 with cache policy: Uncacheable
+DEBUG: Try to acquire security-insensitive MMIO range: 0x41ff0000..0x41ff0000 with cache policy: Uncacheable
+DEBUG: Try to acquire security-insensitive MMIO range: 0x42000000..0x42000000 with cache policy: Uncacheable
+DEBUG: Try to acquire security-insensitive MMIO range: 0x40001000..0x40000000 with cache policy: Uncacheable
+DEBUG: Try to acquire security-insensitive MMIO range: 0x40002000..0x40001000 with cache policy: Uncacheable
+DEBUG: Try to acquire security-insensitive MMIO range: 0x41fff000..0x41ffe000 with cache policy: Uncacheable
+DEBUG: Try to acquire security-insensitive MMIO range: 0x42000000..0x41fff000 with cache policy: Uncacheable
+ ok
+test ostd::io::io_mem::allocator::test::conflict_region ...INFO: Creating new I/O memory allocator builder, ranges: [
+    0x100000000000..0x100002000000,
+    0x100002001000..0x10000200a000,
+]
+DEBUG: Try to acquire security-insensitive MMIO range: 0xfffffffffff..0x100000000000 with cache policy: Uncacheable
+DEBUG: Try to acquire security-insensitive MMIO range: 0x100000000000..0x100000000001 with cache policy: Uncacheable
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    2,
+)
+DEBUG: Try to acquire security-insensitive MMIO range: 0x100002000001..0x100002000fff with cache policy: Uncacheable
+DEBUG: Try to acquire security-insensitive MMIO range: 0x100001ffffff..0x100002001001 with cache policy: Uncacheable
+DEBUG: Try to acquire security-insensitive MMIO range: 0x100001ffffff..0x100002000000 with cache policy: Uncacheable
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    2,
+)
+DEBUG: Try to acquire security-insensitive MMIO range: 0x100002000000..0x100002000001 with cache policy: Uncacheable
+ ok
+test ostd::io::io_mem::test::read_write_u8 ... ok
+test ostd::io::io_mem::test::read_write_u16 ... ok
+test ostd::io::io_mem::test::read_write_u32 ... ok
+test ostd::io::io_mem::test::read_write_u64 ... ok
+test ostd::io::io_mem::test::boundary_overlap ... ok
+test ostd::io::io_mem::test::copy_to_alignment_and_sizes ... ok
+test ostd::io::io_mem::test::copy_from_alignment_and_sizes ... ok
+test ostd::io::io_port::allocator::test::illegal_region ... ok
+test ostd::io::io_port::allocator::test::conflict_region ...DEBUG: Try to acquire PIO range: 0x60..0x64
+DEBUG: Try to acquire PIO range: 0x62..0x66
+DEBUG: Recycling PIO range: 0x60..0x64
+DEBUG: Try to acquire PIO range: 0x62..0x66
+DEBUG: Recycling PIO range: 0x62..0x66
+ ok
+test ostd::io::io_port::allocator::test::overlapping_region ...DEBUG: Try to acquire PIO range: 0xcf8..0xcf9
+DEBUG: Try to acquire PIO range: 0xcf9..0xcfa
+DEBUG: Try to acquire PIO range: 0xcf8..0xcf9
+DEBUG: Try to acquire PIO range: 0xcf9..0xcfa
+DEBUG: Recycling PIO range: 0xcf8..0xcf9
+DEBUG: Recycling PIO range: 0xcf9..0xcfa
+DEBUG: Try to acquire PIO range: 0xcf9..0xcfa
+DEBUG: Try to acquire PIO range: 0xcf8..0xcf9
+DEBUG: Recycling PIO range: 0xcf8..0xcf9
+DEBUG: Recycling PIO range: 0xcf9..0xcfa
+ ok
+test ostd::irq::top_half::test::alloc_and_free_irq ... ok
+test ostd::irq::top_half::test::register_and_unregister_callback ... ok
+test ostd::log::bridge::test::bridge_map_log_level ... ok
+test ostd::log::bridge::test::bridge_map_level_filter ... ok
+test ostd::log::level::test::level_ordering ... ok
+test ostd::log::level::test::level_filter_enabled ... ok
+test ostd::log::level::test::level_from_u8_clamping ... ok
+test ostd::log::level::test::level_filter_from_level ... ok
+test ostd::mm::dma::test::dma_coherent::read_write ...DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    2,
+)
+ ok
+test ostd::mm::dma::test::dma_coherent::reader_writer ...DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    2,
+)
+ ok
+test ostd::mm::dma::test::dma_coherent::read_write_once ...DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    2,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    3,
+)
+ ok
+test ostd::mm::dma::test::dma_coherent::zero_length_operations ...DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    2,
+)
+ ok
+test ostd::mm::dma::test::dma_coherent::alloc_uninit_dma_coherent ...DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    2,
+)
+ ok
+test ostd::mm::dma::test::dma_coherent::alloc_with_coherent_device ... ok
+test ostd::mm::dma::test::dma_coherent::complex_read_write_patterns ...DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    2,
+)
+ ok
+test ostd::mm::dma::test::dma_stream::to_device ... ok
+test ostd::mm::dma::test::dma_stream::read_write ... ok
+test ostd::mm::dma::test::dma_stream::from_device ... ok
+test ostd::mm::dma::test::dma_stream::reader_writer ... ok
+test ostd::mm::dma::test::dma_stream::streaming_map ... ok
+test ostd::mm::dma::test::dma_stream::alloc_dma_stream ... ok
+test ostd::mm::dma::test::dma_stream::sync_invalid_ranges ... ok
+test ostd::mm::dma::test::dma_stream::alloc_uninit_dma_stream ... ok
+test ostd::mm::dma::test::dma_stream::streaming_boundary_conditions ... ok
+test ostd::mm::frame::allocator::test_alloc_dealloc ... ok
+test ostd::mm::frame::test::frame::frame_drop ... ok
+test ostd::mm::frame::test::frame::frame_clone ... ok
+test ostd::mm::frame::test::frame::frame_to_uframe ... ok
+test ostd::mm::frame::test::frame::frame_allocation ... ok
+test ostd::mm::frame::test::frame::frame_conversions ... ok
+test ostd::mm::frame::test::frame_ref::frame_impls_non_null_ptr ... ok
+test ostd::mm::frame::test::frame_ref::frame_ref_preserves_refcnt ... ok
+test ostd::mm::frame::test::linked_list::linked_list_push_pop ... ok
+test ostd::mm::frame::test::linked_list::linked_list_cursor_at ... ok
+test ostd::mm::frame::test::linked_list::linked_list_cursor_ops ... ok
+test ostd::mm::frame::test::pinned_metadata::unpin_metadata_remains_mutable ... ok
+test ostd::mm::frame::test::pinned_metadata::pinned_metadata_survives_lists_and_type_erasure ... ok
+test ostd::mm::frame::test::pinned_metadata::pinned_replacement_runs_drop_without_frame_callback ... ok
+test ostd::mm::frame::test::segment::segment_drop ... ok
+test ostd::mm::frame::test::segment::segment_slice ... ok
+test ostd::mm::frame::test::segment::segment_split ... ok
+test ostd::mm::frame::test::segment::frame_to_segment ... ok
+test ostd::mm::frame::test::segment::segment_creation ... ok
+test ostd::mm::frame::test::segment::segment_iteration ... ok
+test ostd::mm::frame::test::segment::segment_to_segment ... ok
+test ostd::mm::frame::test::segment::segment_slice_empty ... ok
+test ostd::mm::frame::test::segment::segment_to_usegment ... ok
+test ostd::mm::frame::test::segment::max_segment_creation ... ok
+test ostd::mm::frame::test::segment::invalid_segment_split ... ok
+test ostd::mm::frame::test::segment::empty_segment_creation ... ok
+test ostd::mm::frame::test::segment::zeroed_segment_creation ... ok
+test ostd::mm::frame::test::segment::segment_iter_partial_drop ... ok
+test ostd::mm::frame::test::segment::segment_slice_out_of_bounds ... ok
+test ostd::mm::frame::test::untyped::untyped_frame_reader_writer ... ok
+test ostd::mm::frame::test::untyped::untyped_segment_reader_writer ... ok
+test ostd::mm::frame::unaccepted::test::partition_units_evenly ... ok
+test ostd::mm::frame::unaccepted::test::partition_units_sparse_cpus ... ok
+test ostd::mm::frame::unaccepted::test::partition_units_byte_remainder ... ok
+test ostd::mm::frame::unaccepted::test::partition_units_partial_byte_tail ... ok
+test ostd::mm::heap::slab::tests::empty_slab_can_be_repurposed ... ok
+test ostd::mm::heap::slab::tests::slab_slots_remain_unique_and_reusable ...ERROR: Allocating a slot from a full slab
+ ok
+test ostd::mm::heap::slab::tests::slab_allocation_survives_list_transfers ... ok
+test ostd::mm::heap::slab::tests::swapping_slab_handles_keeps_metadata_with_its_page ... ok
+test ostd::mm::kspace::test::manual_paddr_to_vaddr ... ok
+test ostd::mm::kspace::test::kvirt_area_tracked_drop ... ok
+test ostd::mm::kspace::test::kvirt_area_untracked_drop ... ok
+test ostd::mm::kspace::test::kvirt_area_tracked_map_pages ... ok
+test ostd::mm::kspace::test::kvirt_area_untracked_map_pages ... ok
+test ostd::mm::page_table::test::arch_pte_impls::zeroed_pte_is_absent_pte ... ok
+test ostd::mm::page_table::test::arch_pte_impls::cast_pt_pte_preserves_repr ... ok
+test ostd::mm::page_table::test::arch_pte_impls::cast_frame_pte_preserves_repr ... ok
+test ostd::mm::page_table::test::arch_pte_impls::cast_absent_pte_preserves_repr ... ok
+test ostd::mm::page_table::test::boot_pt::map_protect ... ok
+test ostd::mm::page_table::test::boot_pt::map_base_page ... ok
+test ostd::mm::page_table::test::boot_pt::protect_base_page_unmapped ... ok
+test ostd::mm::page_table::test::boot_pt::map_base_page_already_mapped ... ok
+test ostd::mm::page_table::test::create_page_table::new_kernel_page_table ... ok
+test ostd::mm::page_table::test::create_page_table::create_user_page_table ... ok
+test ostd::mm::page_table::test::lock_levels::map_above_locked_level ... ok
+test ostd::mm::page_table::test::lock_levels::map_huge_pages_with_minimum_lock_level ... ok
+test ostd::mm::page_table::test::mapping::mixed_granularity_map_unmap ... ok
+test ostd::mm::page_table::test::mapping::mixed_granularity_protect_query ... ok
+test ostd::mm::page_table::test::navigation::jump ... ok
+test ostd::mm::page_table::test::navigation::find_next ... ok
+test ostd::mm::page_table::test::navigation::jump_from_guard_level_end ... ok
+test ostd::mm::page_table::test::navigation::jump_near_address_space_end ... ok
+test ostd::mm::page_table::test::navigation::find_next_keeps_va_around_barrier ... ok
+test ostd::mm::page_table::test::navigation::find_next_rejects_overflowing_len ... ok
+test ostd::mm::page_table::test::navigation::jump_from_end_and_query_huge_middle ... ok
+test ostd::mm::page_table::test::overlapping_mappings::unaligned_map ... ok
+test ostd::mm::page_table::test::overlapping_mappings::overlapping_mappings ... ok
+test ostd::mm::page_table::test::page_properties::map_preserves_page_property ... ok
+test ostd::mm::page_table::test::protection_and_query::base_protect_query ... ok
+test ostd::mm::page_table::test::protection_and_query::protect_next_empty_entry ... ok
+test ostd::mm::page_table::test::protection_and_query::protect_next_touches_empty_range ... ok
+test ostd::mm::page_table::test::range_checks::range_check ... ok
+test ostd::mm::page_table::test::range_checks::boundary_conditions ... ok
+test ostd::mm::page_table::test::range_checks::end_boundary_mapping ... ok
+test ostd::mm::page_table::test::range_checks::start_boundary_mapping ... ok
+test ostd::mm::page_table::test::range_checks::overflow_boundary_mapping ... ok
+test ostd::mm::page_table::test::test_utils::test_subset_iter ... ok
+test ostd::mm::page_table::test::unmap::take_large_takes_subtree ... ok
+test ostd::mm::page_table::test::unmap::take_next_takes_something ... ok
+test ostd::mm::test::io::fill_infallible ... ok
+test ostd::mm::test::io::read_val_segment ... ok
+test ostd::mm::test::io::fill_zeros_segment ... ok
+test ostd::mm::test::io::read_slice_segment ... ok
+test ostd::mm::test::io::fallible_read_write ... ok
+test ostd::mm::test::io::fill_zeros_fallible ... ok
+test ostd::mm::test::io::write_slice_segment ... ok
+test ostd::mm::test::io::atomic_load_fallible ... ok
+test ostd::mm::test::io::skip_read_infallible ... ok
+test ostd::mm::test::io::write_val_infallible ... ok
+test ostd::mm::test::io::limit_read_infallible ... ok
+test ostd::mm::test::io::partial_read_fallible ... ok
+test ostd::mm::test::io::skip_write_infallible ... ok
+test ostd::mm::test::io::limit_write_infallible ... ok
+test ostd::mm::test::io::partial_write_fallible ... ok
+test ostd::mm::test::io::read_write_val_fallible ... ok
+test ostd::mm::test::io::read_write_u32_infallible ... ok
+test ostd::mm::test::io::read_write_once_infallible ... ok
+test ostd::mm::test::io::read_write_slice_infallible ... ok
+test ostd::mm::test::io::read_write_struct_infallible ... ok
+test ostd::mm::test::io::invalid_read_write_infallible ... ok
+test ostd::mm::test::io::read_beyond_buffer_infallible ... ok
+test ostd::mm::test::io::write_beyond_buffer_infallible ... ok
+test ostd::mm::test::io::atomic_compare_exchange_fallible ... ok
+test ostd::mm::test::io::invalid_args_read_write_fallible ... ok
+test ostd::mm::test::io::read_write_slice_vmio_infallible ... ok
+test ostd::mm::test::vmspace::protect_next ... ok
+test ostd::mm::test::vmspace::vmspace_activate ... ok
+test ostd::mm::test::vmspace::vmspace_creation ... ok
+test ostd::mm::test::vmspace::vmspace_map_twice ... ok
+test ostd::mm::test::vmspace::vmspace_map_unmap ... ok
+test ostd::mm::test::vmspace::cursor_mut_flusher ... ok
+test ostd::mm::test::vmspace::overlapping_cursors ... ok
+test ostd::mm::test::vmspace::vmspace_unmap_twice ... ok
+test ostd::mm::test::vmspace::vmspace_reader_writer ... ok
+test ostd::mm::test::vmspace::protect_out_range_page ... ok
+test ostd::mm::test::vmspace::unaligned_unmap_panics ... ok
+test ostd::mm::test::vmspace::vmspace_map_query_iomem ...DEBUG: Try to acquire security-insensitive MMIO range: 0x100000000000..0x100000001000 with cache policy: Uncacheable
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    2,
+)
+ ok
+test ostd::mm::test::vmspace::vmspace_iomem_persistence ...DEBUG: Try to acquire security-insensitive MMIO range: 0x100000003000..0x100000004000 with cache policy: Uncacheable
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    2,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    3,
+)
+ ok
+test ostd::mm::test::vmspace::vmspace_map_iomem_with_offset ...DEBUG: Try to acquire security-insensitive MMIO range: 0x100000001000..0x100000003000 with cache policy: Uncacheable
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    2,
+)
+DEBUG: Performing inter-processor call to 0xffffffff88236210 on CPU CpuId(
+    3,
+)
+ ok
+test ostd::smp::test::pending_ipis_can_be_extended ...DEBUG: Performing inter-processor call to 0xffffffff8819b670 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff8819b670 on CPU CpuId(
+    1,
+)
+ ok
+test ostd::smp::test::pending_ipis_waits_for_all_cpus ...DEBUG: Performing inter-processor call to 0xffffffff8819b670 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff8819b670 on CPU CpuId(
+    2,
+)
+DEBUG: Performing inter-processor call to 0xffffffff8819b670 on CPU CpuId(
+    3,
+)
+ ok
+test ostd::smp::test::pending_ipis_waits_for_remote_cpu ...DEBUG: Performing inter-processor call to 0xffffffff8819b670 on CPU CpuId(
+    1,
+)
+ ok
+test ostd::smp::test::inter_processor_call_runs_on_current_cpu ... ok
+test ostd::sync::mutex::test::try_lock_does_not_unlock ... ok
+test ostd::sync::rcu::non_null::either::test::alignment ... ok
+test ostd::sync::rcu::non_null::either::test::left_pointer ... ok
+test ostd::sync::rcu::non_null::either::test::right_pointer ... ok
+test ostd::sync::rcu::non_null::either::test::rcu_store_load ... ok
+test ostd::sync::rwarc::test::lockless_get ... ok
+test ostd::sync::wait::test::queue_wake_all ... ok
+test ostd::sync::wait::test::queue_wake_one ... ok
+test ostd::sync::wait::test::waiter_wake_drop ... ok
+test ostd::sync::wait::test::waiter_wake_async ... ok
+test ostd::sync::wait::test::waiter_wake_twice ... ok
+test ostd::sync::wait::test::waiter_wake_reorder ... ok
+test ostd::task::test::spawn_task ... ok
+test ostd::task::test::create_task ... ok
+test ostd::test::expect_panic ... ok
+test ostd::test::failing_assertion ... ok
+test ostd::test::trivial_assertion ... ok
+test ostd::util::id_set::id_set_tests::id_set_full ... ok
+test ostd::util::id_set::id_set_tests::id_set_iter ... ok
+test ostd::util::id_set::id_set_tests::id_set_empty ... ok
+test ostd::util::id_set::id_set_tests::iter_in_range ... ok
+test ostd::util::id_set::id_set_tests::id_set_default ... ok
+test ostd::util::id_set::id_set_tests::id_set_from_id ... ok
+test ostd::util::id_set::id_set_tests::id_set_iter_full ... ok
+test ostd::util::id_set::id_set_tests::iter_in_range_to ... ok
+test ostd::util::id_set::id_set_tests::id_set_add_remove ... ok
+test ostd::util::id_set::id_set_tests::iter_in_range_from ... ok
+test ostd::util::id_set::id_set_tests::iter_in_range_full ... ok
+test ostd::util::id_set::id_set_tests::id_set_add_all_clear ... ok
+test ostd::util::id_set::id_set_tests::id_set_cardinality_one ... ok
+test ostd::util::id_set::id_set_tests::id_set_iter_multi_part ... ok
+test ostd::util::id_set::id_set_tests::iter_in_half_unbounded ... ok
+test ostd::util::id_set::id_set_tests::iter_in_range_next_part ... ok
+test ostd::util::id_set::id_set_tests::iter_in_unbounded_bounds ... ok
+test ostd::util::id_set::id_set_tests::id_set_exact_part_boundary ... ok
+test ostd::util::id_set::id_set_tests::iter_in_range_to_inclusive ... ok
+test ostd::util::id_set::id_set_tests::id_set_add_remove_multi_part ... ok
+test ostd::util::id_set::id_set_tests::iter_in_range_ends_after_last ... ok
+test ostd::util::id_set::id_set_tests::id_set_just_over_part_boundary ... ok
+test ostd::util::id_set::id_set_tests::iter_in_range_starts_after_last ... ok
+test ostd::util::id_set::id_set_tests::iter_in_bound_tuple_exclusive_inclusive ... ok
+test ostd::util::id_set::id_set_tests::iter_in_bound_tuple_inclusive_exclusive ... ok
+test ostd::util::id_set::id_set_tests::id_set_is_full_with_less_than_full_last_part ... ok
+test ostd::util::ops::test::range_difference_a_empty ... ok
+test ostd::util::ops::test::range_difference_b_empty ... ok
+test ostd::util::ops::test::range_intersection_empty ... ok
+test ostd::util::ops::test::range_difference_all_same ... ok
+test ostd::util::ops::test::range_difference_all_empty ... ok
+test ostd::util::ops::test::range_difference_contained ... ok
+test ostd::util::ops::test::range_difference_left_same ... ok
+test ostd::util::ops::test::range_difference_right_same ... ok
+test ostd::util::ops::test::range_intersection_disjoint ... ok
+test ostd::util::ops::test::range_intersection_contained ... ok
+test ostd::util::ops::test::range_intersection_overlapping ... ok
+test ostd::util::ops::test::range_difference_left_intersected ... ok
+test ostd::util::ops::test::range_difference_right_intersected ... ok
+test ostd::util::range_counter::test::add_remove_range ... ok
+test ostd::util::range_counter::test::add_remove_covering ... ok
+test ostd::util::range_counter::test::add_remove_overlapping_end ... ok
+test ostd::util::range_counter::test::add_remove_partial_overlap ... ok
+test ostd::util::range_counter::test::add_remove_overlapping_beginning ... ok
+test ostd::vm::gpm_space::test::guest_mapping_lifecycle ...DEBUG: Performing inter-processor call to 0xffffffff881534b0 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff881534b0 on CPU CpuId(
+    2,
+)
+DEBUG: Performing inter-processor call to 0xffffffff881534b0 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff8819e070 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff8819e070 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff8819e070 on CPU CpuId(
+    2,
+)
+DEBUG: Performing inter-processor call to 0xffffffff8819e070 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff8819e070 on CPU CpuId(
+    2,
+)
+DEBUG: Performing inter-processor call to 0xffffffff8819e070 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff8819e070 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff8819e070 on CPU CpuId(
+    2,
+)
+DEBUG: Performing inter-processor call to 0xffffffff8819e070 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff882f76e0 on CPU CpuId(
+    1,
+)
+DEBUG: Performing inter-processor call to 0xffffffff882f76e0 on CPU CpuId(
+    3,
+)
+DEBUG: Performing inter-processor call to 0xffffffff882f76e0 on CPU CpuId(
+    2,
+)
+ ok
+
+test result: ok. 228 passed; 0 failed; 0 filtered out.
+
+[ktest runner] All crates tested.
+E

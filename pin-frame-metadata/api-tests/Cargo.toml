@@ -1,0 +1,25 @@
+[package]
+name = "pinned-frame-api-tests"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+
+[lints]
+workspace = true
+
+[dependencies]
+ostd = { path = "../../ostd" }
+
+[features]
+direct-swap = []
+whole-link-swap = []
+cursor-swap = []
+dynamic-downcast = []
+unpinned-access = []
+replacement = []
+premature-teardown = []

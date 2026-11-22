@@ -21,6 +21,153 @@ struct MockUFrameMeta {
 }
 impl_untyped_frame_meta_for!(MockUFrameMeta);
 
+// Regression tests for the common pinning contract introduced for #4252.
+mod pinned_metadata {
+    use alloc::sync::Arc;
+    use core::{
+        marker::PhantomPinned,
+        pin::Pin,
+        sync::atomic::{AtomicUsize, Ordering},
+    };
+
+    use super::MockFrameMeta;
+    use crate::{
+        mm::{
+            Frame, FrameAllocOptions, Infallible, UniqueFrame, VmReader,
+            frame::{
+                linked_list::{Link, LinkedList},
+                meta::AnyFrameMeta,
+            },
+        },
+        prelude::ktest,
+    };
+
+    #[derive(Debug, Default)]
+    struct Lifecycle {
+        callbacks: AtomicUsize,
+        drops: AtomicUsize,
+    }
+
+    // This type is independent of slabs. Its destructor verifies that pinning
+    // survives generic frame conversions and intrusive list operations.
+    #[derive(Debug)]
+    struct AddressSensitiveMeta {
+        address: usize,
+        lifecycle: Arc<Lifecycle>,
+        _pin: PhantomPinned,
+    }
+
+    impl AddressSensitiveMeta {
+        fn new(lifecycle: &Arc<Lifecycle>) -> Self {
+            Self {
+                address: 0,
+                lifecycle: lifecycle.clone(),
+                _pin: PhantomPinned,
+            }
+        }
+
+        fn initialize(self: Pin<&mut Self>) {
+            let address = self.as_ref().get_ref() as *const Self as usize;
+            // SAFETY: Only the address field changes; Self is not moved.
+            let this = unsafe { self.get_unchecked_mut() };
+            assert_eq!(this.address, 0);
+            this.address = address;
+        }
+
+        fn check_address(&self) {
+            if self.address != 0 {
+                assert_eq!(self.address, self as *const Self as usize);
+            }
+        }
+    }
+
+    // SAFETY: The callback does not read the frame or move any pinned data.
+    // Drop independently checks the pinning invariant, including on Pin::set.
+    unsafe impl AnyFrameMeta for AddressSensitiveMeta {
+        unsafe fn on_drop(self: Pin<&mut Self>, _reader: &mut VmReader<Infallible>) {
+            self.check_address();
+            self.lifecycle.callbacks.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+
+    impl Drop for AddressSensitiveMeta {
+        fn drop(&mut self) {
+            self.check_address();
+            self.lifecycle.drops.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+
+    #[ktest]
+    fn unpin_metadata_remains_mutable() {
+        let mut frame: UniqueFrame<MockFrameMeta> = FrameAllocOptions::new()
+            .alloc_frame_with(MockFrameMeta { value: 1 })
+            .unwrap()
+            .try_into()
+            .unwrap();
+        frame.meta_mut().value = 2;
+        frame.meta_mut().get_mut().value += 1;
+        assert_eq!(frame.meta().value, 3);
+    }
+
+    #[ktest]
+    fn pinned_metadata_survives_lists_and_type_erasure() {
+        let lifecycle = Arc::new(Lifecycle::default());
+        let mut first = LinkedList::new();
+        let mut second = LinkedList::new();
+        for _ in 0..3 {
+            let mut frame: UniqueFrame<Link<AddressSensitiveMeta>> = FrameAllocOptions::new()
+                .alloc_frame_with(Link::new(AddressSensitiveMeta::new(&lifecycle)))
+                .unwrap()
+                .try_into()
+                .unwrap();
+            frame.meta_mut().project().initialize();
+            first.push_back(frame);
+        }
+
+        // Removing a middle node updates both neighbors without moving metadata.
+        let mut cursor = first.cursor_front_mut();
+        cursor.move_next();
+        cursor.current_meta().unwrap().check_address();
+        second.push_front(cursor.take_current().unwrap());
+        second.push_back(first.pop_front().unwrap());
+        second.push_back(first.pop_back().unwrap());
+        assert!(first.is_empty());
+
+        let frame: Frame<Link<AddressSensitiveMeta>> = second.pop_front().unwrap().into();
+        let other = frame.clone();
+        drop(frame);
+        let erased: Frame<dyn AnyFrameMeta> = other.into();
+        let mut unique: UniqueFrame<dyn AnyFrameMeta> = erased.try_into().unwrap();
+        assert!(
+            (unique.dyn_meta_mut().as_ref().get_ref() as &dyn core::any::Any)
+                .is::<Link<AddressSensitiveMeta>>()
+        );
+        drop(unique);
+        drop(second);
+
+        assert_eq!(lifecycle.callbacks.load(Ordering::Relaxed), 3);
+        assert_eq!(lifecycle.drops.load(Ordering::Relaxed), 3);
+    }
+
+    #[ktest]
+    fn pinned_replacement_runs_drop_without_frame_callback() {
+        let lifecycle = Arc::new(Lifecycle::default());
+        let mut frame: UniqueFrame<AddressSensitiveMeta> = FrameAllocOptions::new()
+            .alloc_frame_with(AddressSensitiveMeta::new(&lifecycle))
+            .unwrap()
+            .try_into()
+            .unwrap();
+        frame.meta_mut().initialize();
+        frame.meta_mut().set(AddressSensitiveMeta::new(&lifecycle));
+        assert_eq!(lifecycle.callbacks.load(Ordering::Relaxed), 0);
+        assert_eq!(lifecycle.drops.load(Ordering::Relaxed), 1);
+        frame.meta_mut().initialize();
+        drop(frame.repurpose(()));
+        assert_eq!(lifecycle.callbacks.load(Ordering::Relaxed), 1);
+        assert_eq!(lifecycle.drops.load(Ordering::Relaxed), 2);
+    }
+}
+
 // Frame allocation and management tests
 mod frame {
     use super::*;

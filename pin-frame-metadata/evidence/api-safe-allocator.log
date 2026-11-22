@@ -1,0 +1,26 @@
+    Checking bitflags v2.13.2
+    Checking bit_field v0.10.4
+   Compiling thiserror v2.0.21
+    Checking log v0.4.35
+   Compiling zerocopy v0.8.64
+    Checking lazy_static v1.5.1
+    Checking ptr_meta v0.3.2
+    Checking int-to-c-enum v0.1.0 ($WORKTREE/ostd/libs/int-to-c-enum)
+    Checking iced-x86 v1.22.0
+    Checking id-alloc v0.1.0 ($WORKTREE/ostd/libs/id-alloc)
+    Checking linux-boot-params v0.19.0 ($WORKTREE/ostd/libs/linux-bzimage/boot-params)
+    Checking x86 v0.52.0
+    Checking align_ext v0.1.0 ($WORKTREE/ostd/libs/align_ext)
+    Checking multiboot2-common v0.3.0
+    Checking ostd-test v0.19.0 ($WORKTREE/ostd/libs/ostd-test)
+    Checking uefi-raw v0.14.0
+    Checking uefi-raw v0.12.0
+    Checking x86_64 v0.15.5
+    Checking acpi v5.2.0
+    Checking smallvec v1.16.6
+    Checking multiboot2 v0.24.1
+    Checking tdx-guest v0.5.0
+    Checking ostd-pod v0.4.0 ($WORKTREE/ostd/libs/ostd-pod)
+    Checking ostd v0.19.0 ($WORKTREE/ostd)
+    Checking pinned-frame-api-tests v0.0.0 ($WORKTREE/pin-frame-metadata/api-tests)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.51s
