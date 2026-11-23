@@ -78,7 +78,7 @@ mod teardown {
 
     // SAFETY: The callback only checks the reader's bounds without reading bytes.
     unsafe impl AnyFrameMeta for TeardownMeta {
-        unsafe fn on_drop(&mut self, reader: &mut VmReader<Infallible>) {
+        unsafe fn on_drop(self: core::pin::Pin<&mut Self>, reader: &mut VmReader<Infallible>) {
             assert_eq!(reader.cursor() as usize, mm::paddr_to_vaddr(self.paddr));
             assert_eq!(reader.remain(), PAGE_SIZE);
             assert_eq!(self.stage.swap(TORN_DOWN, Ordering::Relaxed), INSTALLED);
@@ -191,6 +191,139 @@ mod teardown {
             assert!(UniqueFrame::from_unused(paddr, MockFrameMeta::default()).is_err());
             assert!(Frame::<dyn AnyFrameMeta>::from_in_use(paddr).is_err());
         }
+    }
+}
+
+// Address-sensitive frame metadata tests.
+mod pinning {
+    use core::{marker::PhantomPinned, pin::Pin};
+
+    use super::*;
+    use crate::mm::{
+        self, Infallible, UniqueFrame, VmReader,
+        frame::linked_list::{Link, LinkedList},
+    };
+
+    #[derive(Default)]
+    struct State {
+        address: AtomicUsize,
+        paddr: AtomicUsize,
+        callbacks: AtomicUsize,
+        drops: AtomicUsize,
+    }
+
+    struct PinnedMeta {
+        state: Arc<State>,
+        _pin: PhantomPinned,
+    }
+
+    impl PinnedMeta {
+        fn initialize(self: Pin<&mut Self>, paddr: Paddr) {
+            let address = self.as_ref().get_ref() as *const Self as usize;
+            self.state.address.store(address, Ordering::Relaxed);
+            self.state.paddr.store(paddr, Ordering::Relaxed);
+        }
+
+        fn check_address(&self) {
+            assert_eq!(
+                self as *const Self as usize,
+                self.state.address.load(Ordering::Relaxed)
+            );
+        }
+    }
+
+    // SAFETY: The callback does not read bytes. Address dependencies are only
+    // initialized after pinning, and the metadata is !Unpin and never moved.
+    unsafe impl AnyFrameMeta for PinnedMeta {
+        unsafe fn on_drop(self: Pin<&mut Self>, reader: &mut VmReader<Infallible>) {
+            self.check_address();
+            assert_eq!(
+                reader.cursor() as usize,
+                mm::paddr_to_vaddr(self.state.paddr.load(Ordering::Relaxed))
+            );
+            assert_eq!(reader.remain(), PAGE_SIZE);
+            assert_eq!(self.state.callbacks.fetch_add(1, Ordering::Relaxed), 0);
+        }
+    }
+
+    impl Drop for PinnedMeta {
+        fn drop(&mut self) {
+            if self.state.address.load(Ordering::Relaxed) != 0 {
+                self.check_address();
+            }
+            self.state.drops.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+
+    fn new_frame() -> (UniqueFrame<Link<PinnedMeta>>, Arc<State>) {
+        let state = Arc::new(State::default());
+        let mut frame: UniqueFrame<_> = FrameAllocOptions::new()
+            .alloc_frame_with(Link::new(PinnedMeta {
+                state: state.clone(),
+                _pin: PhantomPinned,
+            }))
+            .unwrap()
+            .try_into()
+            .unwrap();
+        let paddr = frame.paddr();
+        frame.pin_meta().project().initialize(paddr);
+        (frame, state)
+    }
+
+    #[ktest]
+    fn pinned_metadata_survives_ownership_changes() {
+        let (first, first_state) = new_frame();
+        let (second, second_state) = new_frame();
+        let first_paddr = first.paddr();
+        let mut list = LinkedList::new();
+        list.push_back(first);
+        list.push_front(second);
+        let mut cursor = list.cursor_mut_at(first_paddr).unwrap();
+        cursor.pin_current_meta().unwrap().check_address();
+        let first = cursor.take_current().unwrap();
+        assert!(cursor.pin_current_meta().is_none());
+        let second = list.pop_back().unwrap();
+        list.push_front(first);
+        list.push_back(second);
+        let first = list.pop_front().unwrap();
+        let shared: Frame<_> = first.into();
+        let other = shared.clone();
+        drop(other);
+        let erased: Frame<dyn AnyFrameMeta> = shared.into();
+        let mut unique: UniqueFrame<dyn AnyFrameMeta> = erased.try_into().unwrap();
+        assert_eq!(unique.paddr(), first_paddr);
+        assert_eq!(
+            unique.pin_dyn_meta().as_ref().get_ref().type_id(),
+            core::any::TypeId::of::<Link<PinnedMeta>>()
+        );
+        let shared: Frame<dyn AnyFrameMeta> = unique.into();
+        let typed = Frame::<Link<PinnedMeta>>::try_from(shared).unwrap();
+        let mut unique: UniqueFrame<_> = typed.try_into().unwrap();
+        unique.pin_meta().project().check_address();
+        drop(unique.repurpose(()));
+        drop(list);
+        for state in [first_state, second_state] {
+            assert_eq!(state.callbacks.load(Ordering::Relaxed), 1);
+            assert_eq!(state.drops.load(Ordering::Relaxed), 1);
+        }
+    }
+
+    #[ktest]
+    fn pinned_replacement_runs_ordinary_drop() {
+        let (mut frame, old_state) = new_frame();
+        let new_state = Arc::new(State::default());
+        frame.pin_meta().project().set(PinnedMeta {
+            state: new_state.clone(),
+            _pin: PhantomPinned,
+        });
+        assert_eq!(old_state.callbacks.load(Ordering::Relaxed), 0);
+        assert_eq!(old_state.drops.load(Ordering::Relaxed), 1);
+        let paddr = frame.paddr();
+        frame.pin_meta().project().initialize(paddr);
+        frame.reset_as_unused();
+        assert_eq!(new_state.callbacks.load(Ordering::Relaxed), 1);
+        assert_eq!(new_state.drops.load(Ordering::Relaxed), 1);
+        drop(UniqueFrame::from_unused(paddr, ()).unwrap());
     }
 }
 
