@@ -21,6 +21,179 @@ struct MockUFrameMeta {
 }
 impl_untyped_frame_meta_for!(MockUFrameMeta);
 
+mod teardown {
+    use super::*;
+    use crate::{
+        mm::{self, Infallible, UniqueFrame, VmReader},
+        panic,
+    };
+
+    const INSTALLED: usize = 0;
+    const TORN_DOWN: usize = 1;
+    const DROPPED: usize = 2;
+
+    static CUSTOM_TEARDOWNS: AtomicUsize = AtomicUsize::new(0);
+    static CUSTOM_HELPER_CALLS: AtomicUsize = AtomicUsize::new(0);
+    static CUSTOM_TRAIT_CALLS: AtomicUsize = AtomicUsize::new(0);
+
+    struct CustomDropMeta;
+    impl CustomDropMeta {
+        fn cleanup() {
+            CUSTOM_TEARDOWNS.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+
+    fn drop_body() {
+        CUSTOM_HELPER_CALLS.fetch_add(1, Ordering::Relaxed);
+    }
+
+    trait DropBody {
+        fn run();
+    }
+
+    impl DropBody for CustomDropMeta {
+        fn run() {
+            CUSTOM_TRAIT_CALLS.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+
+    impl_untyped_frame_meta_for!(CustomDropMeta, {
+        Self::cleanup();
+        drop_body();
+        <Self as DropBody>::run();
+        Self::run();
+    });
+
+    #[derive(Clone, Copy)]
+    enum TeardownBehavior {
+        Complete,
+        Panic,
+    }
+
+    struct TeardownMeta {
+        stage: Arc<AtomicUsize>,
+        paddr: Paddr,
+        behavior: TeardownBehavior,
+    }
+
+    // SAFETY: The callback only checks the reader's bounds without reading bytes.
+    unsafe impl AnyFrameMeta for TeardownMeta {
+        unsafe fn on_drop(&mut self, reader: &mut VmReader<Infallible>) {
+            assert_eq!(reader.cursor() as usize, mm::paddr_to_vaddr(self.paddr));
+            assert_eq!(reader.remain(), PAGE_SIZE);
+            assert_eq!(self.stage.swap(TORN_DOWN, Ordering::Relaxed), INSTALLED);
+            assert!(
+                matches!(self.behavior, TeardownBehavior::Complete),
+                "teardown panic"
+            );
+        }
+    }
+
+    impl Drop for TeardownMeta {
+        fn drop(&mut self) {
+            assert_eq!(self.stage.swap(DROPPED, Ordering::Relaxed), TORN_DOWN);
+        }
+    }
+
+    fn new_frame(behavior: TeardownBehavior) -> (UniqueFrame<TeardownMeta>, Arc<AtomicUsize>) {
+        let stage = Arc::new(AtomicUsize::new(INSTALLED));
+        let mut frame: UniqueFrame<_> = FrameAllocOptions::new()
+            .alloc_frame_with(TeardownMeta {
+                stage: stage.clone(),
+                paddr: 0,
+                behavior,
+            })
+            .unwrap()
+            .try_into()
+            .unwrap();
+        frame.meta_mut().paddr = frame.paddr();
+        (frame, stage)
+    }
+
+    #[ktest]
+    fn custom_teardown_runs_once() {
+        let before = CUSTOM_TEARDOWNS.load(Ordering::Relaxed);
+        let helpers_before = CUSTOM_HELPER_CALLS.load(Ordering::Relaxed);
+        let trait_calls_before = CUSTOM_TRAIT_CALLS.load(Ordering::Relaxed);
+        let frame = FrameAllocOptions::new()
+            .alloc_frame_with(CustomDropMeta)
+            .unwrap();
+        let other = frame.clone();
+        drop(frame);
+        assert_eq!(CUSTOM_TEARDOWNS.load(Ordering::Relaxed), before);
+        assert_eq!(CUSTOM_HELPER_CALLS.load(Ordering::Relaxed), helpers_before);
+        assert_eq!(
+            CUSTOM_TRAIT_CALLS.load(Ordering::Relaxed),
+            trait_calls_before
+        );
+        drop(other);
+        assert_eq!(CUSTOM_TEARDOWNS.load(Ordering::Relaxed), before + 1);
+        assert_eq!(
+            CUSTOM_HELPER_CALLS.load(Ordering::Relaxed),
+            helpers_before + 1
+        );
+        assert_eq!(
+            CUSTOM_TRAIT_CALLS.load(Ordering::Relaxed),
+            trait_calls_before + 2
+        );
+    }
+
+    #[ktest]
+    fn release_calls_teardown_once_before_drop() {
+        let (frame, stage) = new_frame(TeardownBehavior::Complete);
+        drop(frame);
+        assert_eq!(stage.load(Ordering::Relaxed), DROPPED);
+
+        let (frame, stage) = new_frame(TeardownBehavior::Complete);
+        let frame = Frame::from(frame);
+        let other = frame.clone();
+        drop(frame);
+        assert_eq!(stage.load(Ordering::Relaxed), INSTALLED);
+        drop(other);
+        assert_eq!(stage.load(Ordering::Relaxed), DROPPED);
+    }
+
+    #[ktest]
+    fn repurpose_calls_teardown_once_before_drop() {
+        let (frame, stage) = new_frame(TeardownBehavior::Complete);
+        let paddr = frame.paddr();
+        let frame = frame.repurpose(MockFrameMeta { value: 42 });
+        assert_eq!(stage.load(Ordering::Relaxed), DROPPED);
+        assert_eq!(frame.paddr(), paddr);
+        assert_eq!(frame.meta().value, 42);
+    }
+
+    #[ktest]
+    fn reset_calls_teardown_once_before_drop() {
+        let (frame, stage) = new_frame(TeardownBehavior::Complete);
+        let paddr = frame.paddr();
+        frame.reset_as_unused();
+        assert_eq!(stage.load(Ordering::Relaxed), DROPPED);
+        // Reset does not return the page to the allocator. Reclaim it to clean up.
+        drop(UniqueFrame::from_unused(paddr, MockFrameMeta::default()).unwrap());
+    }
+
+    #[ktest]
+    fn panicking_teardown_retains_frame() {
+        // These frames must remain allocated after the panic. Intentionally leak
+        // them: accessing their metadata or retrying teardown would be unsound.
+        let teardown_fns: [fn(UniqueFrame<TeardownMeta>); 4] = [
+            drop::<UniqueFrame<TeardownMeta>>,
+            |frame| drop(Frame::from(frame)),
+            |frame| drop(frame.repurpose(MockFrameMeta::default())),
+            UniqueFrame::reset_as_unused,
+        ];
+        for teardown_fn in teardown_fns {
+            let (frame, stage) = new_frame(TeardownBehavior::Panic);
+            let paddr = frame.paddr();
+            assert!(panic::catch_unwind(|| teardown_fn(frame)).is_err());
+            assert_eq!(stage.load(Ordering::Relaxed), TORN_DOWN);
+            assert!(UniqueFrame::from_unused(paddr, MockFrameMeta::default()).is_err());
+            assert!(Frame::<dyn AnyFrameMeta>::from_in_use(paddr).is_err());
+        }
+    }
+}
+
 // Frame allocation and management tests
 mod frame {
     use super::*;
